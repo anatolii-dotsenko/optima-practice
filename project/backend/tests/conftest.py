@@ -80,3 +80,72 @@ def inactive_user(db_session: Session) -> User:
     db_session.commit()
     db_session.refresh(user)
     return user
+
+
+@pytest.fixture(scope="function")
+def auth_headers(sample_user: User) -> dict:
+    """Generate valid Bearer Authorization headers for sample_user."""
+    from app.core.security import create_access_token
+
+    token = create_access_token(subject=str(sample_user.id))
+    return {"Authorization": f"Bearer {token}"}
+
+
+@pytest.fixture(scope="function")
+def sample_category(db_session: Session):
+    """Pre-populate a test category."""
+    from app.models.category import Category
+
+    cat = Category(
+        name="Кава",
+        slug="coffee",
+        description="Кавові напої",
+        display_order=1,
+        is_active=True,
+    )
+    db_session.add(cat)
+    db_session.commit()
+    db_session.refresh(cat)
+    return cat
+
+
+@pytest.fixture(scope="function")
+def sample_menu_item(db_session: Session, sample_category):
+    """Pre-populate an available menu item."""
+    from decimal import Decimal
+
+    from app.models.menu_item import MenuItem
+
+    item = MenuItem(
+        category_id=sample_category.id,
+        name="Капучино",
+        description="Класичний капучино",
+        price=Decimal("65.00"),
+        image_url="https://example.com/cappuccino.jpg",
+        is_available=True,
+    )
+    db_session.add(item)
+    db_session.commit()
+    db_session.refresh(item)
+    return item
+
+
+@pytest.fixture(scope="function")
+def unavailable_menu_item(db_session: Session, sample_category):
+    """Pre-populate an unavailable menu item."""
+    from decimal import Decimal
+
+    from app.models.menu_item import MenuItem
+
+    item = MenuItem(
+        category_id=sample_category.id,
+        name="Матча Лате",
+        description="Японська матча",
+        price=Decimal("80.00"),
+        image_url="https://example.com/matcha.jpg",
+        is_available=False,
+    )
+    db_session.add(item)
+    db_session.commit()
+    db_session.refresh(item)
+    return item

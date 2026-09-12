@@ -40,6 +40,11 @@ Authorization: Bearer <your_access_token>
 | `POST` | `/api/v1/auth/register` | Register a new user | None | [register.md](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/docs/api/endpoints/register.md) |
 | `POST` | `/api/v1/auth/login` | Authenticate & obtain JWT | None | [login.md](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/docs/api/endpoints/login.md) |
 | `GET` | `/api/v1/auth/me` | Fetch authenticated profile | Bearer | [me.md](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/docs/api/endpoints/me.md) |
+| `GET` | `/api/v1/menu/categories` | List active categories | None | [get-categories.md](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/docs/api/endpoints/get-categories.md) |
+| `GET` | `/api/v1/menu/items` | List & search menu items | None | [get-menu.md](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/docs/api/endpoints/get-menu.md) |
+| `POST` | `/api/v1/orders` | Create coffee pre-order | Bearer | [create-order.md](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/docs/api/endpoints/create-order.md) |
+| `GET` | `/api/v1/orders` | Get current user's order history | Bearer | [get-orders.md](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/docs/api/endpoints/get-orders.md) |
+| `PATCH` | `/api/v1/orders/{id}/status` | Transition order status | Bearer | [update-order-status.md](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/docs/api/endpoints/update-order-status.md) |
 | `GET` | `/health` | Liveness health check | None | Direct probe |
 
 ---
@@ -59,10 +64,15 @@ All error responses strictly adhere to the standardized schema:
 | HTTP Status | `code` | Meaning | What the Client Should Do |
 |---|---|---|---|
 | 400 | `domain_error` | Generic domain request failure | Inspect message and adjust input payload |
-| 401 | `unauthorized` | Missing, invalid, or expired Bearer token / wrong login credentials | Prompt user to log in or supply valid Bearer credentials |
-| 403 | `forbidden` | User account is inactive or lacks requisite permission | Display access restricted alert to the user |
-| 404 | `not_found` | Requested resource or user identifier does not exist | Display empty state or not found notification |
-| 409 | `conflict` | Unique resource conflict (e.g. email already in use) | Ask the user to choose another email or reset password |
+| 400 | `menu_item_unavailable` | Cart item is out of stock or inactive | Remove item from cart or adjust quantity |
+| 400 | `invalid_state_transition` | Illegal state machine transition (ADR-0006) | Verify current state before requesting transition |
+| 401 | `unauthorized` | Missing, invalid, or expired Bearer token | Prompt user to log in or refresh token |
+| 403 | `forbidden` | User account is inactive or lacks permissions | Display access restricted alert |
+| 404 | `not_found` | Requested resource does not exist | Display empty state or not found notification |
+| 404 | `category_not_found` | Specified category ID not found | Refresh category list or remove filter |
+| 404 | `menu_item_not_found` | Menu item ID not found in database | Refresh menu catalog |
+| 404 | `order_not_found` | Order ID not found | Verify order identifier |
+| 409 | `conflict` | Unique resource conflict (e.g. email exists) | Choose another email or log in |
 | 422 | `validation_failed` | Pydantic payload validation constraint violation | Highlight invalid fields on client form |
 | 500 | `internal_error` | Unhandled server error | Display retry message and contact support |
 
@@ -70,5 +80,5 @@ All error responses strictly adhere to the standardized schema:
 
 ## Rate Limiting & Performance
 
-- Current Sprint 1 MVP applies connection timeouts (30s) and standard ASGI concurrent worker scaling.
-- Default pagination rule (for collection endpoints in subsequent sprints): limit-offset with `default_limit: 20`, `max_limit: 100`.
+- Current Sprint 2 MVP applies connection timeouts (30s) and standard ASGI concurrent worker scaling.
+- Pagination rule for collection endpoints: limit-offset with `default_limit: 20`, `max_limit: 100`.

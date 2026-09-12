@@ -10,9 +10,13 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.core.errors import DomainException
 from app.core.security import decode_access_token
+from app.repositories.menu_repository import CategoryRepository, MenuItemRepository
+from app.repositories.order_repository import OrderRepository
 from app.repositories.user_repository import UserRepository
 from app.schemas.user import UserResponse
 from app.services.auth_service import AuthService
+from app.services.menu_service import MenuService
+from app.services.order_service import OrderService
 
 security_bearer = HTTPBearer(auto_error=False)
 
@@ -61,3 +65,17 @@ def get_current_user(
             status_code=e.status_code,
             detail={"code": e.code, "message": e.message, "details": e.details},
         )
+
+
+def get_menu_service(db: Session = Depends(get_db)) -> MenuService:
+    """Dependency provider for MenuService."""
+    category_repo = CategoryRepository(db)
+    menu_item_repo = MenuItemRepository(db)
+    return MenuService(category_repo, menu_item_repo)
+
+
+def get_order_service(db: Session = Depends(get_db)) -> OrderService:
+    """Dependency provider for OrderService."""
+    order_repo = OrderRepository(db)
+    menu_item_repo = MenuItemRepository(db)
+    return OrderService(order_repo, menu_item_repo)

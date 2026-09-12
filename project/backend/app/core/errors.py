@@ -69,3 +69,63 @@ class UserInactiveError(DomainException):
             status_code=403,
             details=None,
         )
+
+
+class CategoryNotFoundError(DomainException):
+    """Raised when a requested category does not exist."""
+
+    def __init__(self, category_id: int) -> None:
+        super().__init__(
+            message=f"Category with ID {category_id} not found",
+            code="category_not_found",
+            status_code=404,
+            details={"category_id": category_id},
+        )
+
+
+class MenuItemNotFoundError(DomainException):
+    """Raised when a requested menu item does not exist."""
+
+    def __init__(self, item_id: int) -> None:
+        super().__init__(
+            message=f"Menu item with ID {item_id} not found",
+            code="menu_item_not_found",
+            status_code=404,
+            details={"menu_item_id": item_id},
+        )
+
+
+class MenuItemUnavailableError(DomainException):
+    """Raised when an item in the cart is currently out of stock / unavailable."""
+
+    def __init__(self, item_name: str, item_id: int) -> None:
+        super().__init__(
+            message=f"Item '{item_name}' is currently not available for ordering",
+            code="menu_item_unavailable",
+            status_code=400,
+            details={"menu_item_id": item_id, "item_name": item_name},
+        )
+
+
+class OrderNotFoundError(DomainException):
+    """Raised when a requested order does not exist."""
+
+    def __init__(self, order_id: int) -> None:
+        super().__init__(
+            message=f"Order with ID {order_id} not found",
+            code="order_not_found",
+            status_code=404,
+            details={"order_id": order_id},
+        )
+
+
+class InvalidOrderStateError(DomainException):
+    """Raised when an order transition violates the state machine rules (ADR-0006)."""
+
+    def __init__(self, current_status: str, target_status: str) -> None:
+        super().__init__(
+            message=f"Cannot transition order from '{current_status}' to '{target_status}'",
+            code="invalid_state_transition",
+            status_code=400,
+            details={"current_status": current_status, "target_status": target_status},
+        )

@@ -96,6 +96,233 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
       security:
       - HTTPBearer: []
+  /api/v1/menu/categories:
+    get:
+      tags:
+      - Menu & Catalog
+      summary: List menu categories
+      description: Retrieve all active menu categories ordered by display order.
+      operationId: get_categories_api_v1_menu_categories_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/CategoryResponse'
+                type: array
+                title: Response Get Categories Api V1 Menu Categories Get
+  /api/v1/menu/items:
+    get:
+      tags:
+      - Menu & Catalog
+      summary: List menu items
+      description: Retrieve all available menu items with optional category filtering
+        and search.
+      operationId: get_menu_items_api_v1_menu_items_get
+      parameters:
+      - name: category_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          description: Filter by category ID
+          title: Category Id
+        description: Filter by category ID
+      - name: search
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: Search by name or description
+          title: Search
+        description: Search by name or description
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MenuItemResponse'
+                title: Response Get Menu Items Api V1 Menu Items Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - Menu & Catalog
+      summary: Create menu item
+      description: Create a new menu item (requires authentication).
+      operationId: create_menu_item_api_v1_menu_items_post
+      security:
+      - HTTPBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MenuItemCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MenuItemResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/menu/items/{item_id}:
+    get:
+      tags:
+      - Menu & Catalog
+      summary: Get menu item by ID
+      description: Retrieve single menu item details.
+      operationId: get_menu_item_api_v1_menu_items__item_id__get
+      parameters:
+      - name: item_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Item Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MenuItemResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/orders:
+    get:
+      tags:
+      - Orders & Pre-orders
+      summary: List my orders
+      description: List all orders for the currently authenticated user.
+      operationId: get_my_orders_api_v1_orders_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/OrderResponse'
+                type: array
+                title: Response Get My Orders Api V1 Orders Get
+      security:
+      - HTTPBearer: []
+    post:
+      tags:
+      - Orders & Pre-orders
+      summary: Create pre-order
+      description: Place a new coffee pre-order with server-authoritative price calculation
+        (ADR-0007).
+      operationId: create_order_api_v1_orders_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderCreateRequest'
+        required: true
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - HTTPBearer: []
+  /api/v1/orders/{order_id}:
+    get:
+      tags:
+      - Orders & Pre-orders
+      summary: Get order by ID
+      description: Get single order details for current user.
+      operationId: get_order_api_v1_orders__order_id__get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: order_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Order Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/orders/{order_id}/status:
+    patch:
+      tags:
+      - Orders & Pre-orders
+      summary: Update order status
+      description: Transition order status according to state machine rules (ADR-0006).
+      operationId: update_order_status_api_v1_orders__order_id__status_patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: order_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Order Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderStatusUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
   /health:
     get:
       tags:
@@ -114,6 +341,40 @@ paths:
                 title: Response Health Check Health Get
 components:
   schemas:
+    CategoryResponse:
+      properties:
+        name:
+          type: string
+          maxLength: 100
+          minLength: 2
+          title: Name
+        slug:
+          type: string
+          maxLength: 100
+          minLength: 2
+          title: Slug
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+        display_order:
+          type: integer
+          title: Display Order
+          default: 0
+        id:
+          type: integer
+          title: Id
+        is_active:
+          type: boolean
+          title: Is Active
+      type: object
+      required:
+      - name
+      - slug
+      - id
+      - is_active
+      title: CategoryResponse
     ErrorResponse:
       properties:
         code:
@@ -139,6 +400,15 @@ components:
       - message
       title: ErrorResponse
       description: Standard error response structure as required by engineering specifications.
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
     LoginRequest:
       properties:
         email:
@@ -158,6 +428,198 @@ components:
       - password
       title: LoginRequest
       description: User login payload.
+    MenuItemCreate:
+      properties:
+        name:
+          type: string
+          maxLength: 150
+          minLength: 2
+          title: Name
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+        price:
+          anyOf:
+          - type: number
+            exclusiveMinimum: 0.0
+          - type: string
+            pattern: ^(?!^[-+.]*$)[+-]?0*(?:\d{0,8}|(?=[\d.]{1,11}0*$)\d{0,8}\.\d{0,2}0*$)
+          title: Price
+        image_url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Image Url
+        is_available:
+          type: boolean
+          title: Is Available
+          default: true
+        category_id:
+          type: integer
+          title: Category Id
+      type: object
+      required:
+      - name
+      - price
+      - category_id
+      title: MenuItemCreate
+    MenuItemResponse:
+      properties:
+        name:
+          type: string
+          maxLength: 150
+          minLength: 2
+          title: Name
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+        price:
+          type: string
+          pattern: ^(?!^[-+.]*$)[+-]?0*(?:\d{0,8}|(?=[\d.]{1,11}0*$)\d{0,8}\.\d{0,2}0*$)
+          title: Price
+        image_url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Image Url
+        is_available:
+          type: boolean
+          title: Is Available
+          default: true
+        id:
+          type: integer
+          title: Id
+        category_id:
+          type: integer
+          title: Category Id
+      type: object
+      required:
+      - name
+      - price
+      - id
+      - category_id
+      title: MenuItemResponse
+    OrderCreateRequest:
+      properties:
+        items:
+          items:
+            $ref: '#/components/schemas/OrderItemCreate'
+          type: array
+          minItems: 1
+          title: Items
+          description: List of items to order
+        notes:
+          anyOf:
+          - type: string
+            maxLength: 500
+          - type: 'null'
+          title: Notes
+          description: Barista instructions
+      type: object
+      required:
+      - items
+      title: OrderCreateRequest
+    OrderItemCreate:
+      properties:
+        menu_item_id:
+          type: integer
+          title: Menu Item Id
+        quantity:
+          type: integer
+          maximum: 50.0
+          minimum: 1.0
+          title: Quantity
+          description: Quantity to order
+      type: object
+      required:
+      - menu_item_id
+      - quantity
+      title: OrderItemCreate
+    OrderItemResponse:
+      properties:
+        id:
+          type: integer
+          title: Id
+        menu_item_id:
+          type: integer
+          title: Menu Item Id
+        quantity:
+          type: integer
+          title: Quantity
+        unit_price:
+          type: string
+          pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
+          title: Unit Price
+        item_name:
+          type: string
+          title: Item Name
+      type: object
+      required:
+      - id
+      - menu_item_id
+      - quantity
+      - unit_price
+      - item_name
+      title: OrderItemResponse
+    OrderResponse:
+      properties:
+        id:
+          type: integer
+          title: Id
+        user_id:
+          type: integer
+          title: User Id
+        status:
+          $ref: '#/components/schemas/OrderStatus'
+        total_amount:
+          type: string
+          pattern: ^(?!^[-+.]*$)[+-]?0*\d*\.?\d*$
+          title: Total Amount
+        notes:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Notes
+        items:
+          items:
+            $ref: '#/components/schemas/OrderItemResponse'
+          type: array
+          title: Items
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+      type: object
+      required:
+      - id
+      - user_id
+      - status
+      - total_amount
+      - items
+      - created_at
+      title: OrderResponse
+    OrderStatus:
+      type: string
+      enum:
+      - pending
+      - confirmed
+      - ready
+      - completed
+      - cancelled
+      title: OrderStatus
+      description: Lifecycle states for a customer pre-order (ADR-0006).
+    OrderStatusUpdate:
+      properties:
+        status:
+          $ref: '#/components/schemas/OrderStatus'
+      type: object
+      required:
+      - status
+      title: OrderStatusUpdate
     RegisterRequest:
       properties:
         email:
@@ -250,6 +712,32 @@ components:
       title: UserResponse
       description: User response schema returned to clients. Never exposes password
         hash.
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
   securitySchemes:
     HTTPBearer:
       type: http

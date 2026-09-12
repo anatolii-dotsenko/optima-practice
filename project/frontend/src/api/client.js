@@ -10,10 +10,10 @@ class ApiClient {
   constructor() {
     this.baseUrl = this._resolveBaseUrl();
     this.tokenKey = "coffee_shop_access_token";
+    this.cartKey = "coffee_shop_cart";
   }
 
   _resolveBaseUrl() {
-    // Allows overriding API URL via window or localStorage without touching codebase
     if (typeof window !== "undefined" && window.__APP_CONFIG__?.API_BASE_URL) {
       return window.__APP_CONFIG__.API_BASE_URL;
     }
@@ -21,7 +21,6 @@ class ApiClient {
     if (stored) {
       return stored;
     }
-    // Default fallback to local FastAPI backend v1 prefix
     return "http://localhost:8000/api/v1";
   }
 
@@ -51,6 +50,74 @@ class ApiClient {
   isAuthenticated() {
     return Boolean(this.getToken());
   }
+
+  // --- Cart Management ---
+
+  getCart() {
+    if (typeof localStorage === "undefined") return [];
+    try {
+      const data = localStorage.getItem(this.cartKey);
+      return data ? JSON.parse(data) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  _saveCart(cart) {
+    if (typeof localStorage !== "undefined") {
+      localStorage.setItem(this.cartKey, JSON.stringify(cart));
+      window.dispatchEvent(new Event("cart_updated"));
+    }
+  }
+
+  addToCart(item) {
+    const cart = this.getCart();
+    const existing = cart.find((i) => i.id === item.id);
+    if (existing) {
+      existing.quantity += 1;
+    } else {
+      cart.push({
+        id: item.id,
+        name: item.name,
+        price: parseFloat(item.price),
+        image_url: item.image_url,
+        quantity: 1,
+      });
+    }
+    this._saveCart(cart);
+  }
+
+  updateCartQuantity(itemId, delta) {
+    let cart = this.getCart();
+    const existing = cart.find((i) => i.id === itemId);
+    if (existing) {
+      existing.quantity += delta;
+      if (existing.quantity <= 0) {
+        cart = cart.filter((i) => i.id !== itemId);
+      }
+      this._saveCart(cart);
+    }
+  }
+
+  removeFromCart(itemId) {
+    let cart = this.getCart();
+    cart = cart.filter((i) => i.id !== itemId);
+    this._saveCart(cart);
+  }
+
+  clearCart() {
+    this._saveCart([]);
+  }
+
+  getCartCount() {
+    return this.getCart().reduce((acc, item) => acc + item.quantity, 0);
+  }
+
+  getCartTotal() {
+    return this.getCart().reduce((acc, item) => acc + item.price * item.quantity, 0);
+  }
+
+  // --- HTTP Request Engine ---
 
   async _request(endpoint, options = {}) {
     const url = `${this.baseUrl}${endpoint.startsWith("/") ? "" : "/"}${endpoint}`;
@@ -90,7 +157,6 @@ class ApiClient {
       return data;
     } catch (err) {
       if (!err.status) {
-        // Network or connection failure
         err.code = "network_error";
         err.message = "Could not connect to backend service. Please ensure the server is running.";
       }
@@ -98,10 +164,8 @@ class ApiClient {
     }
   }
 
-  /**
-   * Register a new user account.
-   * @param {Object} payload { email, password, full_name }
-   */
+  // --- Auth Endpoints ---
+
   async register(payload) {
     return this._request("/auth/register", {
       method: "POST",
@@ -109,10 +173,6 @@ class ApiClient {
     });
   }
 
-  /**
-   * Authenticate credentials and store JWT token.
-   * @param {Object} payload { email, password }
-   */
   async login(payload) {
     const data = await this._request("/auth/login", {
       method: "POST",
@@ -124,18 +184,58 @@ class ApiClient {
     return data;
   }
 
-  /**
-   * Fetch current authenticated user profile.
-   */
   async getMe() {
     return this._request("/auth/me", {
       method: "GET",
     });
   }
 
-  /**
-   * Verify server health status.
-   */
+  // --- Menu Endpoints ---
+
+  async getCategories() {
+    return this._request("/menu/categories", {
+      method: "GET",
+    });
+  }
+
+  async getMenuItems({ categoryId, search } = {}) {
+    const params = new URLSearchParams();
+    if (categoryId) params.append("category_id", categoryId);
+    if (search) params.append("search", search);
+
+    const queryStr = params.toString() ? `?${params.toString()}` : "";
+    return this._request(`/menu/items${queryStr}`, {
+      method: "GET",
+    });
+  }
+
+  async getMenuItem(itemId) {
+    return this._request(`/menu/items/${itemId}`, {
+      method: "GET",
+    });
+  }
+
+  // --- Orders Endpoints ---
+
+  async createOrder({ items, notes }) {
+    return this._request("/orders", {
+      method: "POST",
+      body: JSON.stringify({ items, notes }),
+    });
+  }
+
+  async getMyOrders() {
+    return this._request("/orders", {
+      method: "GET",
+    });
+  }
+
+  async getOrder(orderId) {
+    return this._request(`/orders/${orderId}`, {
+      method: "GET",
+    });
+  }
+
   async checkHealth() {
     return this._request("/../health", {
       method: "GET",

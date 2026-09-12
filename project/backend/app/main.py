@@ -22,11 +22,16 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     setup_logging()
     try:
         Base.metadata.create_all(bind=engine)
+        from app.core.database import SessionLocal
+        from app.seed import seed_initial_data
+
+        with SessionLocal() as db:
+            seed_initial_data(db)
     except Exception as exc:
         import logging
 
         logging.getLogger("app").warning(
-            "Database auto-provisioning skipped or unavailable on boot: %s", exc
+            "Database auto-provisioning or seeding skipped on boot: %s", exc
         )
     yield
 
