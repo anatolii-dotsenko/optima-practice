@@ -14,8 +14,8 @@
 ## 🔗 Швидкі посилання
 
 - 📄 **Офіційний звіт з практики (ДСТУ 3008:2015):** [Переглянути в Google Docs](https://docs.google.com/document/d/1Cs6HnUGZj_0T1uJMkrIG5QCZNgycH28b9k-fGj9Tzh8/edit?usp=sharing)
-- 🌐 **Робочий вебклієнт (Cloud Run Frontend):** [https://optima-coffee-frontend-139026558151.europe-central2.run.app](https://optima-coffee-frontend-139026558151.europe-central2.run.app)
-- 📖 **Інтерактивна специфікація API (Swagger UI):** [https://optima-coffee-backend-139026558151.europe-central2.run.app/api/v1/docs](https://optima-coffee-backend-139026558151.europe-central2.run.app/api/v1/docs)
+- 🌐 **Робочий вебклієнт (Cloud Run Frontend):** [https://optima-coffee-frontend-ily7vljsqa-lm.a.run.app](https://optima-coffee-frontend-ily7vljsqa-lm.a.run.app)
+- 📖 **Інтерактивна специфікація API (Swagger UI):** [https://optima-coffee-backend-ily7vljsqa-lm.a.run.app/api/v1/docs](https://optima-coffee-backend-ily7vljsqa-lm.a.run.app/api/v1/docs)
 - 🚀 **Інструкція з хмарного розгортання:** [`project/docs/cloud-run-deployment.md`](project/docs/cloud-run-deployment.md)
 
 ---
