@@ -1,0 +1,268 @@
+# Ordered skeleton of the practice report.
+# `order` is the physical order of elements in the document.
+# A generator walks `sections[]` and satisfies `content_contract` for each.
+spec_version: "1.0.0"
+kind: report_structure
+document_type: practice_report
+note: >-
+  The supplied шаблон.md is empty (0 bytes). This skeleton is reconstructed from
+  request.md and ДСТУ 3008:2015. If the real template becomes available, it overrides
+  the front-matter layout (title page, grounds sheet, calendar plan) but not the
+  DSTU-derived formatting rules.
+
+sections:
+  - key: title_page
+    order: 10
+    title: "Титульний аркуш"
+    required: true
+    numbered: false
+    heading_in_document: false
+    source: [course_request, "DSTU 4.1"]
+    new_page: true
+    content_contract:
+      must_include:
+        - educational_institution
+        - faculty_and_department
+        - discipline: "Технологічна практика. Ч. 1"
+        - report_type: "ЗВІТ"
+        - work_title
+        - author: [full_name, group]
+        - supervisor: [position, full_name]
+        - city
+        - year
+      forbidden:
+        - page_number_printed
+      notes:
+        - "DSTU 7.12: hyphenation on the title page is forbidden."
+        - "The title page is counted in page numbering (DSTU 7.3.3)."
+
+  - key: grounds_sheet
+    order: 20
+    title: "Аркуш підстав для проведення практики"
+    required: true
+    numbered: false
+    source: [course_request]
+    new_page: true
+    content_contract:
+      must_include:
+        - regulatory_documents_governing_the_practice
+        - individual_assignment_for_the_practice_period
+        - approval_signatures
+
+  - key: calendar_plan
+    order: 30
+    title: "Календарний план-графік практики"
+    required: true
+    numbered: false
+    source: [course_request]
+    new_page: true
+    content_contract:
+      must_include:
+        - table_of_activities_with_dates
+        - interim_reporting_milestones
+        - seminar_participation
+        - final_reporting_date
+      format: table
+
+  - key: abstract
+    order: 40
+    title: "РЕФЕРАТ"
+    required: true
+    numbered: false
+    source: ["DSTU 4.3", "DSTU 3.5.1"]
+    new_page: true
+    max_pages: 1
+    content_contract:
+      ordered_blocks:
+        - volume_statistics: >-
+            "Звіт: N с., N рис., N табл., N дод., N джерел." — must match the actual document.
+        - keywords: {min: 5, max: 15, case: upper, order: alphabetical, separator: ","}
+        - object_of_research
+        - goal_of_the_work
+        - research_methods_and_tooling
+        - results_and_their_novelty
+        - main_technical_characteristics
+        - implementation_information
+        - relation_to_other_works
+        - recommendations_for_using_the_results
+        - field_of_application
+        - significance_of_the_work
+        - conclusions_and_proposals
+      notes:
+        - "Omitted items are skipped, the order of the remaining ones is preserved (DSTU 4.3.4)."
+        - "Statistics must be recomputed after the document is final."
+
+  - key: toc
+    order: 50
+    title: "ЗМІСТ"
+    required: true
+    numbered: false
+    source: ["DSTU 4.4", course_request]
+    new_page: true
+    content_contract:
+      generated: auto
+      must_include: [structural_elements, sections, subsections, appendices, page_numbers]
+      forbidden: [hyphenation]
+
+  - key: abbreviations
+    order: 60
+    title: "ПЕРЕЛІК УМОВНИХ ПОЗНАЧЕНЬ, СИМВОЛІВ, ОДИНИЦЬ, СКОРОЧЕНЬ І ТЕРМІНІВ"
+    required: false
+    numbered: false
+    source: ["DSTU 4.5", "DSTU 7.14"]
+    new_page: true
+    include_when: non_standard_abbreviations_present
+    content_contract:
+      format: two_column_list
+      order: alphabetical
+      notes:
+        - "Ukrainian abbreviations first, then other languages (DSTU 7.14)."
+        - "Recommended for an IT report: API, CI/CD, CRUD, MVP, ORM, REST, UI, UX, ТЗ."
+
+  - key: introduction
+    order: 70
+    title: "ВСТУП"
+    required: true
+    numbered: false
+    source: ["DSTU 5.1", course_request]
+    new_page: true
+    content_contract:
+      must_include:
+        - current_state_of_the_subject_area
+        - world_trends_in_solving_the_problem
+        - relevance_and_grounds_for_the_work
+        - goal_of_the_work_and_fields_of_application
+        - relation_to_other_works
+        - short_description_of_achieved_results
+      target_length_pages: [1, 2]
+
+  - key: body
+    order: 80
+    title: "Основна частина (суть звіту)"
+    required: true
+    numbered: true
+    source: ["DSTU 5.2", course_request]
+    structure: recommended_three_sections
+    flexible: true
+    flexibility_note: >-
+      request.md allows a different number of sections if agreed with the supervisor;
+      the three-section split below is the default.
+    subsections:
+      - key: section_1_analysis
+        number: 1
+        title: "Аналіз предметної області та проєктування системи"
+        content_contract:
+          must_include:
+            - subject_area_analysis
+            - comparative_analysis_of_existing_solutions   # deliverable PZ-05
+            - competitive_matrix: {min_competitors: 3, min_features: 10}
+            - target_audience_and_user_personas             # deliverable PZ-06
+            - functional_requirements                       # deliverable PZ-07
+            - non_functional_requirements
+            - unique_value_proposition
+            - software_architecture                         # deliverable PZ-09
+            - architecture_diagram: {format: plantuml}
+          outputs: [requirements_specification, architecture]
+
+      - key: section_2_implementation
+        number: 2
+        title: "Практична реалізація програмної системи"
+        content_contract:
+          must_include:
+            - technology_stack_and_its_justification        # deliverable PZ-10
+            - libraries_frameworks_patterns_used
+            - database_schema
+            - backend_implementation_and_rest_api          # deliverable PZ-16
+            - api_documentation                             # deliverable PZ-15
+            - frontend_implementation                       # deliverable PZ-18
+            - ui_ux_mockups                                 # deliverable PZ-17
+            - module_structure_of_the_actual_system
+            - key_code_listings
+            - git_workflow_and_branching_strategy           # deliverable PZ-14
+            - containerization_and_deployment
+          code_listing_rules:
+            - "Listings are formatted as figures (DSTU 7.5) or appendices."
+            - "Code, identifiers and code comments are in English."
+            - "Long listings (> 1 page) go to an appendix, not the body."
+
+      - key: section_3_results
+        number: 3
+        title: "Результати роботи та перспективи розвитку"
+        content_contract:
+          must_include:
+            - demonstration_of_the_working_system
+            - screenshots_or_logs_as_evidence
+            - unit_and_integration_test_results             # deliverable PZ-21
+            - performance_audit_results                     # deliverable PZ-27
+            - cross_browser_and_cross_platform_test_results # deliverable PZ-28
+            - bug_reports_and_their_resolution              # deliverable PZ-25
+            - uat_feedback_analysis                         # deliverable PZ-30
+            - analysis_of_results
+            - further_development_prospects
+          evidence_policy: >-
+            Screenshots, logs and metrics must come from the actual system.
+            Missing evidence is reported as a gap (INV-06), never fabricated.
+
+  - key: conclusions
+    order: 90
+    title: "ВИСНОВКИ"
+    required: true
+    numbered: false
+    source: ["DSTU 5.3", course_request]
+    new_page: true
+    content_contract:
+      must_include:
+        - summary_of_the_performed_work
+        - achieved_results_and_their_assessment
+        - degree_of_implementation_and_fields_of_use
+        - skills_practised_during_the_internship   # explicit course requirement
+        - further_prospects
+      target_length_pages: [1, 2]
+
+  - key: recommendations
+    order: 100
+    title: "РЕКОМЕНДАЦІЇ"
+    required: false
+    numbered: false
+    source: ["DSTU 5.4"]
+    new_page: true
+    include_when: recommendations_derived_from_conclusions
+    content_contract:
+      must_be_specific: true
+
+  - key: reference_list
+    order: 110
+    title: "ПЕРЕЛІК ДЖЕРЕЛ ПОСИЛАННЯ"
+    required: true
+    numbered: false
+    source: ["DSTU 5.5", course_request]
+    new_page: true
+    content_contract:
+      order: first_mention
+      bibliographic_standard: "ДСТУ ГОСТ 7.1:2006"
+      min_entries: 10
+      must_include_types: [documentation, standards, books_or_articles, web_resources]
+      notes:
+        - "Web sources must carry an access date."
+        - "Every entry must be cited in the body text (INV-05)."
+        - "Academic integrity: third-party material must be attributed at the point of use."
+
+  - key: appendices
+    order: 120
+    title: "ДОДАТКИ"
+    required: false
+    numbered: false
+    source: ["DSTU 6", "DSTU 7.15"]
+    new_page: true
+    typical_content:
+      - key_source_code_listings
+      - full_api_documentation
+      - end_user_manual            # deliverable PZ-29
+      - technical_specification    # deliverable PZ-08
+      - architecture_diagrams_full_size
+      - test_case_tables_and_reports
+      - presentation_slides        # deliverable PZ-35/PZ-36
+    content_contract:
+      label_template: "ДОДАТОК {letter}"
+      order: by_first_reference_in_text
+      each_starts_on_new_page: true

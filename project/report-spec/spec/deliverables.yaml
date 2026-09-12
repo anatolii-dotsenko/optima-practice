@@ -1,0 +1,372 @@
+# Practical sessions of "Технологічна практика. Ч. 1" normalized into machine-readable tasks.
+# submission.final_list  — session appears in the closing line of request.md
+#                          ("здати роботи ... в завданнях 4, 5, 9, 10, 15, 17, 27, 29, 36")
+# submission.session_text — what the session text itself says
+# submission.any          — true if any source demands an attachment (see CONF-06)
+spec_version: "1.1.0"
+kind: deliverables
+
+# Responsibility split (see AGENTS.md → Agent scope).
+ownership:
+  agent:
+    fields: [outputs, artifact, report_target]
+    responsibility: >-
+      Produce a complete, self-contained artifact for every session whose
+      `submission.any` is true, in the formats listed under `artifact.format`,
+      so that any submission set the user chooses is already covered.
+  user:
+    fields: [submission, mandatory_submission_sessions]
+    responsibility: >-
+      Decide which sessions to upload and where. The agent never blocks work on this
+      and never asks about it (CONF-06, owner: user).
+
+mandatory_submission_sessions: [4, 5, 9, 10, 15, 17, 27, 29, 36]   # owner: user
+
+sessions:
+  - id: PZ-04
+    number: 4
+    title: "Порівняльний аналіз рішень, вибір технологій, вимоги, архітектура, план розробки"
+    outputs:
+      - comparative_analysis_of_analogous_software
+      - feasibility_justification
+      - chosen_technologies_and_tools
+      - software_requirements
+      - application_architecture
+      - development_plan_per_chosen_methodology
+    artifact: {type: document, format: [pdf, md]}
+    submission: {final_list: true, session_text: not_stated, any: true}
+    report_target: section_1_analysis
+
+  - id: PZ-05
+    number: 5
+    title: "Аналіз ринку, таблиця порівняння функціональності"
+    outputs:
+      - competitor_research: {min_direct_and_indirect: 3}
+      - competitive_matrix: {min_features: 10, markers: ["✔", "✖"], comment_column: true}
+      - unique_value_proposition
+    artifact: {type: document, format: [pdf, docx]}
+    submission: {final_list: true, session_text: required, any: true}
+    report_target: section_1_analysis
+
+  - id: PZ-06
+    number: 6
+    title: "Цільова аудиторія, профілі користувачів (персони)"
+    outputs:
+      - user_personas:
+          count: [1, 2]
+          fields: [name_and_age, biography, goals_and_motivation, pain_points, technical_skills, expectations]
+    artifact: {type: document, format: [md]}
+    submission: {final_list: false, session_text: not_required, any: false}
+    report_target: section_1_analysis
+
+  - id: PZ-07
+    number: 7
+    title: "Збір і систематизація вимог"
+    outputs:
+      - functional_requirements: {phrasing: "Система повинна ..."}
+      - non_functional_requirements:
+          categories: [performance, security, reliability, scalability, usability]
+      - prioritization: {method: MoSCoW}
+    artifact: {type: table, format: [md, xlsx]}
+    submission: {final_list: false, session_text: not_required, any: false}
+    report_target: section_1_analysis
+
+  - id: PZ-08
+    number: 8
+    title: "Розробка технічного завдання (ТЗ)"
+    outputs:
+      - tz_document:
+          sections:
+            - introduction_and_project_overview
+            - functional_and_non_functional_requirements
+            - architecture_and_technology_stack
+            - diagrams_and_schemas
+            - development_stages_and_acceptance_criteria
+    artifact: {type: document, format: [pdf]}
+    submission: {final_list: false, session_text: required_pdf, any: true}
+    report_target: [section_1_analysis, appendices]
+
+  - id: PZ-09
+    number: 9
+    title: "Проєктування архітектури, діаграма архітектури системи"
+    outputs:
+      - architecture_diagram:
+          must_show: [user, client_frontend, server_backend, database, api_services, external_services]
+          source_format: plantuml
+          export_format: [png, svg]
+      - architecture_type_choice: {options: [monolith, microservices, three_tier]}
+    artifact: {type: diagram, format: [puml, png]}
+    submission: {final_list: true, session_text: required, any: true}
+    report_target: section_1_analysis
+    notes: "request.md explicitly asks for PlantUML source code."
+
+  - id: PZ-10
+    number: 10
+    title: "Вибір й обґрунтування технологічного стеку"
+    outputs:
+      - stack_justification_document:
+          per_technology: [advantages, drawbacks_and_risks, rejected_alternatives]
+    artifact: {type: document, format: [pdf, md]}
+    submission: {final_list: true, session_text: required, any: true}
+    report_target: section_2_implementation
+
+  - id: PZ-11
+    number: 11
+    title: "Планування першого спринту"
+    outputs:
+      - epics_and_user_stories
+      - technical_tasks_decomposition: {max_task_size_days: 2}
+      - task_assignment_and_estimates
+    artifact: {type: board, tools: [Jira, Trello]}
+    submission: {final_list: false, session_text: not_required, any: false}
+    report_target: section_2_implementation
+
+  - id: PZ-14
+    number: 14
+    title: "Налаштування робочого процесу в Git"
+    outputs:
+      - remote_repository
+      - branching_strategy: {default: GitHub_Flow, alternatives: [GitFlow, GitLab_Flow]}
+      - local_environment_setup
+    artifact: {type: link, target: git_repository}
+    submission: {final_list: false, session_text: required_link, any: true}
+    report_target: section_2_implementation
+
+  - id: PZ-15
+    number: 15
+    title: "Документація до Back-end API"
+    outputs:
+      - api_overview: {base_url: true, data_format: json}
+      - authentication_description
+      - endpoint_specifications:
+          per_endpoint: [method_and_url, purpose, request_parameters, request_example, response_example, http_status_codes]
+      - rate_limiting_and_error_codes
+    artifact: {type: document, format: [openapi, md, pdf]}
+    submission: {final_list: true, session_text: not_required, any: true}
+    report_target: [section_2_implementation, appendices]
+
+  - id: PZ-16
+    number: 16
+    title: "Розробка Back-end"
+    outputs:
+      - database_schema_and_orm_layer
+      - restful_api_implementation
+      - input_validation
+      - modular_code_organization
+      - middleware
+    artifact: {type: link_or_document, target: git_repository}
+    submission: {final_list: false, session_text: required_doc_or_link, any: true}
+    report_target: section_2_implementation
+
+  - id: PZ-17
+    number: 17
+    title: "Макети інтерфейсу (UI/UX)"
+    outputs:
+      - user_flow
+      - wireframes
+      - design_system: {colors: true, typography: true, components: true}
+      - mockups_of_key_mvp_screens
+      - interactive_prototype
+    artifact: {type: design, format: [figma_link, png, pdf]}
+    submission: {final_list: true, session_text: not_required, any: true}
+    report_target: section_2_implementation
+    conflict: CONF-06
+
+  - id: PZ-18
+    number: 18
+    title: "Розробка Front-end"
+    outputs:
+      - component_based_ui
+      - api_integration: {methods: [GET, POST, PUT, DELETE]}
+      - state_handling: [loading, success, error]
+      - responsive_design
+    artifact: {type: link_or_document, target: git_repository}
+    submission: {final_list: false, session_text: required_doc_or_link, any: true}
+    report_target: section_2_implementation
+
+  - id: PZ-19
+    number: 19
+    title: "Code Review"
+    outputs:
+      - pull_request_with_description
+      - reviewer_comments_and_recommendations
+    artifact: {type: link, target: pull_request}
+    submission: {final_list: false, session_text: not_required, any: false}
+    report_target: section_2_implementation
+
+  - id: PZ-20
+    number: 20
+    title: "Інтеграція модулів"
+    outputs:
+      - api_testing: {tools: [Postman, Insomnia]}
+      - end_to_end_scenarios
+      - integration_defect_log
+    artifact: {type: document, format: [md]}
+    submission: {final_list: false, session_text: not_required, any: false}
+    report_target: section_3_results
+
+  - id: PZ-21
+    number: 21
+    title: "Unit-тестування"
+    outputs:
+      - test_framework_choice: {python: [pytest, unittest], js: [Jest, Vitest, Mocha]}
+      - unit_tests: {count: [3, 5], pattern: arrange_act_assert, scenarios: [success, error, invalid_input]}
+      - test_run_report
+    artifact: {type: code_and_report}
+    submission: {final_list: false, session_text: not_required, any: false}
+    report_target: section_3_results
+
+  - id: PZ-24
+    number: 24
+    title: "Аналіз і доопрацювання вимог"
+    outputs:
+      - mvp_vs_tz_audit_checklist
+      - stakeholder_feedback
+      - list_of_required_improvements
+    artifact: {type: checklist, format: [md]}
+    submission: {final_list: false, session_text: not_required, any: false}
+    report_target: section_3_results
+
+  - id: PZ-25
+    number: 25
+    title: "Пошук і документування багів"
+    outputs:
+      - bug_reports:
+          min_count: 3
+          fields: [title, priority, description, expected_result, actual_result, steps_to_reproduce, screenshots, environment]
+          priority_levels: [High, Medium, Low]
+    artifact: {type: issues, tools: [Jira, Asana, Trello, GitHub_Issues]}
+    submission: {final_list: false, session_text: not_required, any: false}
+    report_target: section_3_results
+
+  - id: PZ-26
+    number: 26
+    title: "Рефакторинг коду"
+    outputs:
+      - refactored_fragments: {count: [3, 5], techniques: [extract_method, rename, remove_duplication]}
+      - before_after_justification
+    artifact: {type: code_diff}
+    submission: {final_list: false, session_text: not_required, any: false}
+    report_target: section_2_implementation
+
+  - id: PZ-27
+    number: 27
+    title: "Аудит продуктивності"
+    outputs:
+      - kpi_measurements: [page_load_time, server_response_time, resource_usage, ttfb, fcp]
+      - tooling: [Google_PageSpeed_Insights, Lighthouse, WebPageTest, backend_monitoring]
+      - bottlenecks: {count: [3, 5]}
+      - optimization_recommendations
+    artifact: {type: document, format: [pdf, md]}
+    submission: {final_list: true, session_text: not_required, any: true}
+    report_target: section_3_results
+    conflict: CONF-06
+
+  - id: PZ-28
+    number: 28
+    title: "Кросбраузерне і кросплатформене тестування"
+    outputs:
+      - platform_matrix: {count: [3, 4], example: ["Chrome/desktop", "Safari/mobile", "Firefox/desktop"]}
+      - test_scenarios: {count: [3, 4]}
+      - defect_log_with_platform
+    artifact: {type: table, format: [md, xlsx]}
+    submission: {final_list: false, session_text: not_required, any: false}
+    report_target: section_3_results
+
+  - id: PZ-29
+    number: 29
+    title: "Інструкція для кінцевого користувача"
+    outputs:
+      - user_manual:
+          sections: [introduction, getting_started, main_features, step_by_step_actions, faq, support_contacts]
+          style: {plain_language: true, screenshots: true}
+    artifact: {type: document, format: [pdf]}
+    submission: {final_list: true, session_text: required, any: true}
+    report_target: appendices
+
+  - id: PZ-30
+    number: 30
+    title: "Підготовка до User Acceptance Testing (UAT)"
+    outputs:
+      - uat_plan: {goals: true, scenarios: [3, 5], success_criteria: true}
+      - participants: {count: [2, 3]}
+      - feedback_log_and_prioritized_improvements
+    artifact: {type: document, format: [md]}
+    submission: {final_list: false, session_text: not_required, any: false}
+    report_target: section_3_results
+
+  - id: PZ-32
+    number: 32
+    title: "Технічна документація"
+    outputs:
+      - api_description
+      - architecture_decisions_with_justification
+      - developer_instructions: [environment_setup, running_the_project, deployment]
+    artifact: {type: document, format: [pdf, md]}
+    submission: {final_list: false, session_text: required, any: true}
+    report_target: [section_2_implementation, appendices]
+
+  - id: PZ-33
+    number: 33
+    title: "Фінальна перевірка функціоналу"
+    outputs:
+      - final_checklist
+      - end_to_end_test_run
+      - cross_platform_verification: {browsers: 2, mobile: 1}
+      - defect_fix_log
+    artifact: {type: checklist, format: [md]}
+    submission: {final_list: false, session_text: not_required, any: false}
+    report_target: section_3_results
+
+  - id: PZ-35
+    number: 35
+    title: "Структура й наповнення презентації"
+    outputs:
+      - presentation_outline:
+          slides:
+            - {n: 1, topic: title}
+            - {n: 2, topic: problem_and_solution}
+            - {n: 3, topic: market_analysis}
+            - {n: 4, topic: architecture_and_stack}
+            - {n: 5, topic: mvp_demo}
+            - {n: 6, topic: results_and_achievements}
+            - {n: 7, topic: future_plans}
+            - {n: 8, topic: contacts_and_acknowledgements}
+    artifact: {type: presentation, format: [pptx]}
+    submission: {final_list: false, session_text: not_required, any: false}
+    report_target: appendices
+
+  - id: PZ-36
+    number: 36
+    title: "Фіналізація візуальної частини й підготовка демонстрації"
+    outputs:
+      - styled_slides: {single_style: true, minimal_text: true, data_visualization: true}
+      - demo_script
+      - test_data_set
+      - technical_readiness_check
+    artifact: {type: presentation, format: [pptx, pdf]}
+    submission: {final_list: true, session_text: not_stated, any: true}
+    report_target: appendices
+
+  - id: PZ-37
+    number: 37
+    title: "Підготовка відповідей на можливі запитання й доповіді"
+    outputs:
+      - anticipated_questions: {count: [10, 15], categories: [technical, business, project_management]}
+      - structured_answers: {pattern: "problem_solution_result"}
+      - speech_script_with_timing_and_role_split
+    artifact: {type: document, format: [md]}
+    submission: {final_list: false, session_text: not_required, any: false}
+    report_target: null
+
+  - id: PZ-39
+    number: 39
+    title: "Архівування стабільної версії проєкту"
+    outputs:
+      - release_branch: {naming: "release-vMAJOR.MINOR.PATCH"}
+      - annotated_git_tag: {command: "git tag -a v1.0.0 -m \"Release version 1.0.0\""}
+      - tag_pushed: {command: "git push origin v1.0.0"}
+      - release_notes: [new_features, fixed_bugs, other_changes]
+    artifact: {type: git_tag}
+    submission: {final_list: false, session_text: not_stated, any: false}
+    report_target: section_3_results

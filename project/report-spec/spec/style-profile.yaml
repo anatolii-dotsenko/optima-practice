@@ -1,0 +1,258 @@
+# Resolved formatting profile.
+# All values are already merged according to AGENTS.md precedence rules.
+# A generator applies this file verbatim; a validator checks a document against it.
+spec_version: "1.0.0"
+kind: style_profile
+document_type: practice_report
+language: uk
+authoritative_sources:
+  - id: dstu_3008_2015
+    title: "ДСТУ 3008:2015. Звіти у сфері науки і техніки. Структура та правила оформлювання"
+    effective_from: "2017-07-01"
+  - id: course_request
+    title: "Технологічна практика. Ч. 1 — загальні рекомендації (request.md)"
+
+page:
+  format: A4
+  width_mm: 210
+  height_mm: 297
+  orientation: portrait
+  print_side: single
+  margins_mm:
+    top: 20
+    bottom: 20
+    left: 30          # course requirement; DSTU minimum is 25
+    right: 10
+  max_lines_per_page: 30
+  fallback_format: A3   # allowed only for oversized figures/tables (DSTU 7.1.6)
+
+typography:
+  font_family: "Times New Roman"
+  font_size_pt: 14
+  font_color: "#000000"
+  italic: false          # upright typeface required for body text
+  line_spacing: 1.5      # DSTU allows 1.5 .. 2.0; course fixes 1.5
+  line_spacing_allowed_range: [1.5, 2.0]
+  first_line_indent_cm: 1.25   # "п'ять знаків" per DSTU 7.1.22
+  body_alignment: justify      # source: convention, not normative
+  small_text:                  # notes and footnotes
+    font_size_pt: 12
+    line_spacing: 1.0
+
+headings:
+  structural_elements:         # РЕФЕРАТ, ЗМІСТ, ВСТУП, ВИСНОВКИ, ...
+    case: upper
+    bold: true
+    trailing_dot: false
+    alignment: left_with_indent      # centered is explicitly allowed (DSTU 7.1.20)
+    alignment_alternative: center
+    page_break_before: true
+    numbered: false
+  sections:                    # 1, 2, 3 — numbered chapters of the main body
+    case: upper
+    bold: true
+    trailing_dot: false
+    alignment: left_with_indent
+    alignment_alternative: center
+    page_break_before: true    # source: convention (DSTU is silent for sections)
+    number_format: "N"
+    number_trailing_dot: false
+  subsections:                 # 1.1, 1.1.1, ...
+    case: sentence
+    bold: optional             # DSTU does not require bold below section level
+    trailing_dot: false
+    alignment: left_with_indent
+    page_break_before: false
+    number_format: "N.N"
+  spacing_line_intervals_before: 2
+  spacing_line_intervals_after: 2
+  hyphenation: forbidden
+  orphan_heading_at_page_bottom: forbidden   # DSTU 7.1.25
+
+page_numbering:
+  enabled: true
+  numerals: arabic
+  position: top_right
+  trailing_dot: false
+  continuous_including_appendices: true
+  title_page_counted: true
+  title_page_number_shown: false
+
+figures:
+  caption_position: below_figure
+  caption_alignment: center
+  caption_template: "Рисунок {n} — {title}"        # DSTU 7.5.9
+  caption_template_course: "Рис. {n}. {title}"     # request.md example, see conflicts[]
+  caption_trailing_dot: false
+  numbering_scope: document          # allowed alternative: "section" -> "3.2"
+  appendix_numbering: "{letter}.{n}"
+  reference_required_before: true
+  reference_phrases: ["(рисунок {n})", "на рисунку {n}", "див. рис. {n}"]
+
+tables:
+  caption_position: above_table
+  caption_alignment: left_with_indent
+  caption_template: "Таблиця {n} — {title}"        # DSTU 7.6.8
+  caption_template_course: "Таблиця {n}. {title}"  # request.md example, see conflicts[]
+  caption_trailing_dot: false
+  numbering_scope: document
+  appendix_numbering: "{letter}.{n}"
+  reference_required_before: true
+  continuation_label: "Продовження таблиці {n}"
+  end_label: "Кінець таблиці {n}"
+  repeat_header_on_split: true
+  column_header_case: sentence
+  column_header_trailing_dot: false
+
+lists:
+  colon_before_list: true
+  level_1_marker: "—"                # when list items are never referenced
+  level_1_marker_referenced: "а)"    # lowercase Ukrainian letters + closing bracket
+  level_2_marker: "1)"
+  level_3_marker: "—"
+  item_starts_lowercase: true
+  item_separator: ";"
+  last_item_terminator: "."
+  indent_relative_to_parent: true
+
+formulas:
+  alignment: center
+  number_position: right
+  number_format: "({n})"
+  appendix_number_format: "({letter}.{n})"
+  number_only_if_referenced: true
+  blank_line_before: 1
+  blank_line_after: 1
+  legend_keyword: "де"
+  legend_colon_after_keyword: false
+  legend_first_line_indent_cm: 0
+
+notes:
+  keyword_single: "Примітка."
+  keyword_numbered: "Примітка {n}."
+  font_size_pt: 12
+  line_spacing: 1.0
+  position: after_referenced_object
+
+footnotes:
+  marker: superscript_arabic_with_bracket   # e.g. 1)
+  marker_alternative: asterisk
+  numbering_scope: page
+  max_per_page: 4
+  font_size_pt: 12
+  line_spacing: 1.0
+  separator_line_length_mm: [30, 40]
+
+references:
+  in_text_format: "[{n}]"
+  in_text_range_format: "[{a}]—[{b}]"
+  order: first_mention
+  bibliographic_standard: "ДСТУ ГОСТ 7.1:2006"
+  appendix_only_sources_listed_separately: true
+
+appendices:
+  label_template: "ДОДАТОК {letter}"
+  label_case: upper
+  title_case: sentence
+  title_alignment: center
+  letters_allowed: ["А","Б","В","Г","Д","Е","Ж","И","К","Л","М","Н","П","Р","С","Т","У","Ф","Х","Ц","Ш","Щ","Ю","Я"]
+  letters_forbidden: ["Ґ","Є","З","І","Ї","Й","О","Ч","Ь"]
+  latin_letters_allowed: true
+  latin_letters_forbidden: ["I","O"]
+  each_starts_on_new_page: true
+  order: by_first_reference_in_text
+
+toc:
+  auto_generated: true
+  hyphenation: forbidden
+  includes:
+    - structural_elements
+    - sections
+    - subsections
+    - items_with_titles
+    - appendices
+  page_numbers: true
+
+# ---------------------------------------------------------------------------
+# Known conflicts between the two authoritative sources.
+# `resolution.default` is what the agent applies until a human decides otherwise.
+# `owner: agent` -> the agent must surface the conflict before the document is finalized.
+# `owner: user`  -> administrative decision; the agent applies the default and stays silent.
+# ---------------------------------------------------------------------------
+conflicts:
+  - id: CONF-01
+    owner: agent
+    topic: figure_caption_format
+    dstu: "Рисунок 1 — Назва рисунка (DSTU 7.5.9)"
+    course: "Рис. 1. Назва рисунку (request.md, приклад оформлення)"
+    resolution:
+      default: dstu
+      rationale: >-
+        request.md explicitly names ДСТУ 3008:2015 as the formatting authority and
+        gives the caption only as an informal illustration.
+      requires_human_confirmation: true
+
+  - id: CONF-02
+    owner: agent
+    topic: table_caption_format
+    dstu: "Таблиця 1 — Назва таблиці (DSTU 7.6.8)"
+    course: "Таблиця 1. Назва таблиці (request.md, приклад оформлення)"
+    resolution:
+      default: dstu
+      rationale: same as CONF-01
+      requires_human_confirmation: true
+
+  - id: CONF-03
+    owner: agent
+    topic: left_margin
+    dstu: "не менше 25 мм (DSTU 7.1.11)"
+    course: "30 мм"
+    resolution:
+      default: course
+      rationale: "30 mm satisfies the DSTU minimum and is an explicit course instruction."
+      requires_human_confirmation: false
+
+  - id: CONF-04
+    owner: agent
+    topic: line_spacing
+    dstu: "1,5–2 інтервали (DSTU 7.1.5)"
+    course: "1,5 інтервала, до 30 рядків на сторінці"
+    resolution:
+      default: course
+      rationale: "Course value is inside the DSTU range and is stricter."
+      requires_human_confirmation: false
+
+  - id: CONF-05
+    owner: agent
+    topic: front_matter_composition
+    dstu: >-
+      Вступна частина: титульний аркуш, список авторів, реферат, зміст,
+      скорочення та умовні познаки, передмова (DSTU 3.2.1)
+    course: >-
+      Титульний аркуш, аркуш підстав для проведення практики,
+      календарний план-графік, зміст (request.md)
+    resolution:
+      default: union
+      rationale: >-
+        Course-specific sheets are added after the title page; DSTU-mandatory
+        elements (Реферат, Зміст) are kept. See report-structure.yaml for the merged order.
+      requires_human_confirmation: true
+
+  - id: CONF-06
+    owner: user
+    scope: administrative
+    topic: submission_list_of_practical_sessions
+    dstu: not_applicable
+    course: >-
+      Final line of request.md requires submissions for sessions 4, 5, 9, 10, 15, 17, 27, 29, 36,
+      while the texts of sessions 8, 14, 16, 18, 32 also demand an attachment and
+      the texts of 17, 27 state that no attachment is needed.
+    resolution:
+      default: superset
+      rationale: >-
+        Which sessions are actually uploaded is the user's decision, not the agent's.
+        The agent simply produces a complete, attachable artifact for every session marked
+        `submission.any: true` in deliverables.yaml, so that any submission set the user
+        chooses is already covered.
+      requires_human_confirmation: false
+      agent_action: produce_artifacts_only

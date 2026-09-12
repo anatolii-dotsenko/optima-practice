@@ -1,0 +1,268 @@
+# Documentation-generation contract. One entry per document the agent must produce.
+# `location: repo` -> lives in the git repository, written in English unless stated otherwise.
+# `location: report` -> becomes part of the DSTU-formatted report (Ukrainian).
+spec_version: "1.0.0"
+kind: documentation_set
+
+conventions:
+  repo_docs_language: en
+  user_facing_docs_language: uk
+  code_samples: english_identifiers_and_comments
+  screenshots: "real screens of the running system; no mockups presented as results (INV-06)"
+  freshness_rule: >-
+    A change in code that alters an endpoint, a configuration key or a run command
+    invalidates the corresponding document; update it in the same pull request.
+
+documents:
+  - id: DOC-README
+    title: "README.md"
+    location: repo
+    path: "README.md"
+    language: en
+    audience: [developer, reviewer]
+    source_sessions: [PZ-32]
+    content_contract:
+      - project_name_and_one_line_description
+      - problem_the_product_solves
+      - technology_stack_summary
+      - prerequisites: [podman, podman-compose, git]
+      - quick_start: "copy .env.example, podman-compose up, open the URL"
+      - project_structure_tree
+      - test_command
+      - links_to: [docs/technical-specification.md, docs/api/, docs/adr/, docs/user-manual.md]
+    acceptance:
+      - "A reader who has never seen the project can run it using only this file"
+
+  - id: DOC-TZ
+    title: "Технічне завдання"
+    location: [repo, report]
+    path: "docs/technical-specification.md"
+    export: pdf
+    language: uk
+    audience: [supervisor, team]
+    template: "templates/technical-specification.md"
+    source_sessions: [PZ-07, PZ-08]
+    content_contract:
+      - project_name
+      - goal_and_business_objectives
+      - target_audience_from_personas
+      - functional_requirements:
+          format: "FR-NN | Користувач має можливість ... | пріоритет MoSCoW"
+          traceable_ids: true
+      - non_functional_requirements:
+          format: "NFR-NN | вимірювана вимога | спосіб перевірки"
+          categories: [performance, security, reliability, scalability, usability]
+      - architecture_overview
+      - technology_stack
+      - diagrams_and_schemas
+      - development_stages_and_sprints
+      - acceptance_criteria_per_requirement
+    acceptance:
+      - "Every requirement has a unique id and exactly one interpretation"
+      - "Every FR/NFR id is referenced from either code, tests or the acceptance table"
+
+  - id: DOC-API
+    title: "Back-end API reference"
+    location: [repo, report_appendix]
+    path: "docs/api/openapi.yaml + docs/api/README.md"
+    language: en
+    audience: [frontend_developer, integrator]
+    template: "templates/api-endpoint.md"
+    source_sessions: [PZ-15, PZ-16, PZ-32]
+    content_contract:
+      - overview: [purpose, base_url, data_format, versioning]
+      - authentication: [scheme, how_to_obtain_a_token, header_example]
+      - endpoints:
+          per_endpoint:
+            - method_and_path
+            - purpose
+            - path_and_query_parameters: [name, type, required, description]
+            - request_body_schema_and_example
+            - success_response_example
+            - error_response_examples
+            - http_status_codes
+      - error_catalogue: [code, http_status, meaning, client_action]
+      - rate_limiting
+    generation:
+      preferred: "Derive OpenAPI from the framework (FastAPI auto-schema) and commit the export"
+      manual_fallback: "templates/api-endpoint.md per endpoint"
+    acceptance:
+      - "Every route registered in backend/app/api has a documented entry"
+      - "Every documented example is valid JSON"
+
+  - id: DOC-ADR
+    title: "Architecture decision records"
+    location: repo
+    path: "docs/adr/NNNN-<slug>.md"
+    language: en
+    audience: [team, reviewer, examination_board]
+    template: "templates/adr.md"
+    source_sessions: [PZ-09, PZ-10]
+    required_decisions:
+      - architecture_style: "three-tier vs monolith vs microservices"
+      - backend_language_and_framework
+      - second_language_go: "accepted with a measurable justification, or rejected"
+      - database_engine
+      - container_runtime_and_persistence_strategy
+      - branching_strategy
+    content_contract:
+      - context
+      - decision
+      - considered_alternatives_with_trade_offs
+      - consequences: [positive, negative, risks_and_mitigation]
+      - status: [proposed, accepted, superseded]
+    acceptance:
+      - "Each ADR names at least one rejected alternative and why it lost"
+
+  - id: DOC-ARCH
+    title: "Architecture description and diagram"
+    location: [repo, report]
+    path: "docs/architecture.md + docs/architecture.puml"
+    language: en
+    audience: [team, examination_board]
+    source_sessions: [PZ-09]
+    content_contract:
+      - component_diagram_plantuml_source
+      - component_responsibilities_table
+      - request_flow_description: "user -> client -> api -> service -> repository -> database"
+      - data_model_schema
+      - external_integrations
+      - non_functional_qualities_addressed: [modularity, scalability, reliability, security]
+    acceptance:
+      - "The diagram source is committed, not only the exported image"
+      - "Every component in the diagram exists in the repository layout"
+
+  - id: DOC-DEV
+    title: "Developer guide"
+    location: repo
+    path: "docs/development.md"
+    language: en
+    audience: [new_team_member]
+    source_sessions: [PZ-14, PZ-32]
+    content_contract:
+      - environment_setup_step_by_step
+      - environment_variables_table: [name, required, default, description]
+      - running_in_development_mode
+      - running_the_test_suite
+      - database_migration_commands
+      - branching_strategy_and_pull_request_flow
+      - code_style_and_linting_commands
+      - troubleshooting_common_errors
+    acceptance:
+      - "Commands are copy-pasteable and were actually executed"
+
+  - id: DOC-DEPLOY
+    title: "Deployment guide"
+    location: repo
+    path: "docs/deployment.md"
+    language: en
+    audience: [developer, operator]
+    source_sessions: [PZ-32]
+    content_contract:
+      - container_topology_description
+      - build_commands_per_image
+      - podman_compose_up_and_down
+      - volume_and_backup_strategy
+      - health_checks_and_logs
+      - autostart_via_systemd_quadlet
+      - rollback_to_a_previous_tag
+    acceptance:
+      - "A clean machine can reach a running system by following this file"
+
+  - id: DOC-USER
+    title: "Інструкція для кінцевого користувача"
+    location: [repo, report_appendix]
+    path: "docs/user-manual.md"
+    export: pdf
+    language: uk
+    audience: [end_user]
+    template: "templates/user-manual.md"
+    source_sessions: [PZ-29]
+    content_contract:
+      - introduction_what_the_product_does
+      - getting_started: [installation_or_access, registration, first_login]
+      - main_features_описані_окремими_підрозділами
+      - step_by_step_instructions_with_screenshots
+      - faq
+      - support_contacts
+    style:
+      - "Просту мову без технічного жаргону"
+      - "Один підрозділ на одну дію користувача"
+      - "Скріншот до кожного ключового кроку"
+    acceptance:
+      - "A person seeing the product for the first time can complete every core scenario"
+
+  - id: DOC-TESTS
+    title: "Test report"
+    location: [repo, report]
+    path: "docs/test-report.md"
+    language: en
+    audience: [team, examination_board]
+    source_sessions: [PZ-20, PZ-21, PZ-28, PZ-33]
+    content_contract:
+      - unit_test_summary: [framework, command, count, result]
+      - integration_test_scenarios_and_outcomes
+      - end_to_end_scenarios_and_outcomes
+      - cross_browser_matrix: [browser, platform, result]
+      - known_limitations
+    acceptance:
+      - "Real console output or a real report export; no invented numbers (INV-06)"
+
+  - id: DOC-BUGS
+    title: "Defect log"
+    location: [repo, report]
+    path: "docs/defect-log.md"
+    language: en
+    audience: [team]
+    source_sessions: [PZ-25]
+    content_contract:
+      - per_defect: [id, title, priority, description, expected, actual, steps_to_reproduce, environment, status]
+      - min_entries: 3
+      - priority_levels: [High, Medium, Low]
+    acceptance:
+      - "Titles describe the symptom, not 'кнопка не працює'"
+
+  - id: DOC-PERF
+    title: "Performance audit"
+    location: [repo, report]
+    path: "docs/performance-audit.md"
+    language: en
+    audience: [team, examination_board]
+    source_sessions: [PZ-27]
+    content_contract:
+      - measured_kpis: [page_load_time, server_response_time, ttfb, fcp, resource_usage]
+      - tooling_and_run_conditions
+      - identified_bottlenecks: {min: 3, max: 5}
+      - optimization_plan_per_bottleneck: [action, expected_effect, effort]
+    acceptance:
+      - "Each bottleneck is backed by a measured value, not an assumption"
+
+  - id: DOC-RELEASE
+    title: "Release notes"
+    location: repo
+    path: "docs/release-notes.md"
+    language: en
+    audience: [team, user]
+    source_sessions: [PZ-39]
+    content_contract:
+      - version_and_date
+      - new_features
+      - fixed_defects
+      - known_issues
+      - upgrade_notes
+    acceptance:
+      - "The version matches the annotated git tag"
+
+# Mapping used when assembling the report body from repository documentation.
+report_assembly:
+  section_1_analysis:
+    from: [DOC-TZ, DOC-ARCH, DOC-ADR]
+  section_2_implementation:
+    from: [DOC-ADR, DOC-API, DOC-DEV, DOC-DEPLOY]
+  section_3_results:
+    from: [DOC-TESTS, DOC-BUGS, DOC-PERF, DOC-RELEASE]
+  appendices:
+    from: [DOC-API, DOC-USER, DOC-TZ]
+  rule: >-
+    The report quotes and condenses repository documentation; it never contradicts it.
+    If a document and the code disagree, fix the document first, then the report.

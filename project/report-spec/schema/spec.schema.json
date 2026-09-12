@@ -1,0 +1,205 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/practice-report/spec.schema.json",
+  "title": "Practice report specification set",
+  "description": "Schema for the YAML files in spec/. Select a branch via the `kind` discriminator.",
+  "type": "object",
+  "required": ["spec_version", "kind"],
+  "properties": {
+    "spec_version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "kind": {
+      "type": "string",
+      "enum": ["style_profile", "rule_set", "report_structure", "deliverables",
+        "project_context", "engineering_plan", "documentation_set"]
+    }
+  },
+  "allOf": [
+    { "if": { "properties": { "kind": { "const": "rule_set" } } }, "then": { "$ref": "#/$defs/ruleSet" } },
+    { "if": { "properties": { "kind": { "const": "style_profile" } } }, "then": { "$ref": "#/$defs/styleProfile" } },
+    { "if": { "properties": { "kind": { "const": "report_structure" } } }, "then": { "$ref": "#/$defs/reportStructure" } },
+    { "if": { "properties": { "kind": { "const": "deliverables" } } }, "then": { "$ref": "#/$defs/deliverables" } },
+    { "if": { "properties": { "kind": { "const": "documentation_set" } } }, "then": { "$ref": "#/$defs/documentationSet" } },
+    { "if": { "properties": { "kind": { "const": "engineering_plan" } } }, "then": { "$ref": "#/$defs/engineeringPlan" } }
+  ],
+  "$defs": {
+    "ruleSet": {
+      "required": ["standard", "rules"],
+      "properties": {
+        "standard": { "type": "string" },
+        "rules": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["id", "clause", "normative", "title", "requirement"],
+            "properties": {
+              "id": { "type": "string", "pattern": "^DSTU\\.[0-9.]+\\.[a-z_]+$" },
+              "clause": { "type": "string", "pattern": "^[0-9]+(\\.[0-9]+)*$" },
+              "normative": { "type": "string", "enum": ["MUST", "SHOULD", "MAY"] },
+              "title": { "type": "string" },
+              "requirement": { "type": "string" },
+              "check": {
+                "oneOf": [
+                  { "type": "null" },
+                  {
+                    "type": "object",
+                    "required": ["type"],
+                    "properties": { "type": { "type": "string" } }
+                  }
+                ]
+              }
+            },
+            "additionalProperties": true
+          }
+        }
+      }
+    },
+    "styleProfile": {
+      "required": ["page", "typography", "headings", "conflicts"],
+      "properties": {
+        "page": {
+          "type": "object",
+          "required": ["format", "margins_mm"],
+          "properties": {
+            "format": { "type": "string" },
+            "margins_mm": {
+              "type": "object",
+              "required": ["top", "bottom", "left", "right"],
+              "additionalProperties": { "type": "number", "minimum": 0 }
+            }
+          }
+        },
+        "typography": {
+          "type": "object",
+          "required": ["font_family", "font_size_pt", "line_spacing", "first_line_indent_cm"],
+          "properties": {
+            "font_family": { "type": "string" },
+            "font_size_pt": { "type": "number", "exclusiveMinimum": 0 },
+            "line_spacing": { "type": "number", "minimum": 1 },
+            "first_line_indent_cm": { "type": "number", "minimum": 0 }
+          }
+        },
+        "headings": { "type": "object" },
+        "conflicts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "topic", "resolution"],
+            "properties": {
+              "id": { "type": "string", "pattern": "^CONF-\\d{2}$" },
+              "topic": { "type": "string" },
+              "resolution": {
+                "type": "object",
+                "required": ["default"],
+                "properties": {
+                  "default": { "type": "string" },
+                  "rationale": { "type": "string" },
+                  "requires_human_confirmation": { "type": "boolean" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "reportStructure": {
+      "required": ["sections"],
+      "properties": {
+        "sections": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["key", "order", "title", "required", "numbered"],
+            "properties": {
+              "key": { "type": "string", "pattern": "^[a-z0-9_]+$" },
+              "order": { "type": "integer", "minimum": 0 },
+              "title": { "type": "string" },
+              "required": { "type": "boolean" },
+              "numbered": { "type": "boolean" },
+              "content_contract": { "type": "object" }
+            },
+            "additionalProperties": true
+          }
+        }
+      }
+    },
+    "documentationSet": {
+      "required": ["documents"],
+      "properties": {
+        "documents": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["id", "title", "location", "path", "language", "content_contract"],
+            "properties": {
+              "id": { "type": "string", "pattern": "^DOC-[A-Z]+$" },
+              "title": { "type": "string" },
+              "path": { "type": "string" },
+              "language": { "type": "string", "enum": ["en", "uk"] },
+              "content_contract": { "type": "array", "minItems": 1 },
+              "acceptance": { "type": "array", "items": { "type": "string" } }
+            },
+            "additionalProperties": true
+          }
+        }
+      }
+    },
+    "engineeringPlan": {
+      "required": ["repository", "architecture", "definition_of_done"],
+      "properties": {
+        "repository": {
+          "type": "object",
+          "required": ["layout"],
+          "properties": {
+            "layout": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["path", "purpose"],
+                "properties": {
+                  "path": { "type": "string" },
+                  "purpose": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "architecture": { "type": "object" },
+        "definition_of_done": { "type": "array", "minItems": 1 }
+      }
+    },
+    "deliverables": {
+      "required": ["mandatory_submission_sessions", "sessions"],
+      "properties": {
+        "mandatory_submission_sessions": {
+          "type": "array",
+          "items": { "type": "integer", "minimum": 1 }
+        },
+        "sessions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "number", "title", "outputs", "submission"],
+            "properties": {
+              "id": { "type": "string", "pattern": "^PZ-\\d{2}$" },
+              "number": { "type": "integer", "minimum": 1 },
+              "title": { "type": "string" },
+              "outputs": { "type": "array", "minItems": 1 },
+              "submission": {
+                "type": "object",
+                "required": ["final_list", "any"],
+                "properties": {
+                  "final_list": { "type": "boolean" },
+                  "any": { "type": "boolean" }
+                }
+              }
+            },
+            "additionalProperties": true
+          }
+        }
+      }
+    }
+  }
+}

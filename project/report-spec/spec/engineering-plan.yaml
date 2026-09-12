@@ -1,0 +1,195 @@
+# Code-generation contract. Defines HOW the product is built, not how the report looks.
+# The agent owns everything in this file.
+spec_version: "1.0.0"
+kind: engineering_plan
+
+language_policy:
+  code: en            # identifiers, comments, docstrings, commit messages, log messages
+  repo_docs: en       # README, ADR, API reference
+  user_facing_docs: uk  # ТЗ, інструкція користувача, report text
+  ui_copy: uk
+
+repository:
+  layout:
+    - path: "README.md"
+      purpose: "Entry point: what the product is, how to run it, where the docs are"
+    - path: "docs/"
+      purpose: "All product documentation (see documentation-set.yaml)"
+    - path: "docs/adr/"
+      purpose: "Architecture decision records, one file per decision"
+    - path: "backend/"
+      purpose: "Python service: API, domain logic, persistence"
+    - path: "backend/app/api/"
+      purpose: "HTTP layer only: routing, request/response schemas, status codes"
+    - path: "backend/app/services/"
+      purpose: "Business logic; no framework imports"
+    - path: "backend/app/repositories/"
+      purpose: "Persistence access via ORM; the only layer that talks to the database"
+    - path: "backend/app/models/"
+      purpose: "ORM models and migrations"
+    - path: "backend/app/schemas/"
+      purpose: "Validation schemas (request/response DTOs)"
+    - path: "backend/app/core/"
+      purpose: "Configuration, logging, security, dependency wiring"
+    - path: "backend/tests/"
+      purpose: "pytest suites: unit and integration"
+    - path: "edge/"
+      purpose: "Optional Go service; include only if a non-functional requirement justifies it"
+    - path: "frontend/"
+      purpose: "Client application: components, pages, API client, styles"
+    - path: "deploy/"
+      purpose: "Containerfiles, compose file, volume and network definitions"
+    - path: ".github/workflows/ or .gitlab-ci.yml"
+      purpose: "CI pipeline"
+  naming:
+    python: snake_case
+    go: mixedCaps
+    javascript: camelCase
+    components: PascalCase
+    branches: "feature/<short-slug>, fix/<short-slug>, release-vX.Y.Z"
+    commits: conventional_commits   # feat:, fix:, docs:, refactor:, test:, chore:
+    tags: "vMAJOR.MINOR.PATCH, annotated"
+
+architecture:
+  style: three_tier
+  layer_rules:
+    - "api -> services -> repositories -> database; never skip a layer"
+    - "services must not import the web framework"
+    - "repositories are the only place that constructs queries"
+    - "schemas (DTOs) never leak ORM models to the client"
+  cross_cutting: [configuration, logging, error_handling, authentication, validation]
+  diagram:
+    source: "docs/architecture.puml"
+    format: plantuml
+    exports: [png, svg]
+    must_show: [user, client, api, services, database, external_services]
+
+backend:
+  language: Python
+  framework_candidates: [FastAPI, Django, Flask]
+  default: FastAPI
+  orm: SQLAlchemy
+  migrations: Alembic
+  api_style: REST
+  conventions:
+    resource_naming: plural_nouns          # /api/v1/users, /api/v1/bookings
+    versioning: url_prefix                 # /api/v1
+    methods: {GET: read, POST: create, PUT: replace, PATCH: update, DELETE: delete}
+    status_codes: [200, 201, 204, 400, 401, 403, 404, 409, 422, 429, 500]
+    pagination: {style: limit_offset, default_limit: 20, max_limit: 100}
+    error_body: {fields: [code, message, details], format: json}
+  validation:
+    where: schemas_layer
+    rule: "Every endpoint validates input before it reaches the service layer"
+  security:
+    - "Secrets come from environment variables; never committed"
+    - "Passwords hashed with a modern KDF (bcrypt/argon2), never stored in plain text"
+    - "Parameterized queries only — no string-built SQL"
+    - "Authentication on every endpoint that touches user data"
+    - "CORS restricted to known origins"
+  logging:
+    format: structured_json
+    forbidden_in_logs: [passwords, tokens, personal_data]
+
+edge_service:
+  language: Go
+  status: conditional
+  include_when: >-
+    A documented non-functional requirement needs it (high concurrency, low latency,
+    static binary, small image). Otherwise record it as a rejected alternative in an ADR.
+  scope_if_included: [reverse_proxy, rate_limiting, static_file_serving, websocket_gateway]
+
+frontend:
+  approach: component_based
+  requirements:
+    - responsive_design
+    - explicit_states: [loading, success, empty, error]
+    - api_client_isolated_in_one_module
+    - design_tokens_for_colors_and_typography
+    - no_hardcoded_api_urls
+
+database:
+  default: PostgreSQL
+  deployment: separate_container
+  persistence: named_volume
+  rules:
+    - "Schema changes only through migrations"
+    - "Indexes on every foreign key and on columns used for filtering"
+    - "Seed data script for demo and UAT purposes"
+
+containerization:
+  runtime: Podman
+  compose: podman-compose
+  topology:
+    - name: db
+      image: "postgres:<pinned-version>"
+      volumes: ["pgdata:/var/lib/postgresql/data"]
+      env_from: [.env]
+      healthcheck: "pg_isready"
+    - name: backend
+      build: "deploy/Containerfile.backend"
+      depends_on: [db]
+      ports: ["8000:8000"]
+    - name: edge
+      build: "deploy/Containerfile.edge"
+      optional: true
+      depends_on: [backend]
+    - name: frontend
+      build: "deploy/Containerfile.frontend"
+      depends_on: [backend]
+  rules:
+    - "rootless Podman by default"
+    - "multi-stage builds; no build toolchain in the runtime image"
+    - "non-root USER in the final image"
+    - "pinned base image tags, never :latest"
+    - "no secrets baked into images; pass via environment or secrets"
+    - "named volume for the database — data must survive container recreation"
+  autostart: "podman generate systemd / quadlet units documented in docs/deployment.md"
+
+testing:
+  unit:
+    framework: pytest
+    pattern: arrange_act_assert
+    min_tests: 3
+    recommended_tests: 5
+    scenarios_per_function: [success, error, invalid_input]
+    isolation: "External dependencies replaced with mocks or fakes"
+  integration:
+    scope: [api_endpoints, database_access]
+    tooling: [pytest, httpx_test_client]
+  end_to_end:
+    scenarios: [registration, login, core_domain_action, data_display]
+  frontend:
+    framework_candidates: [Jest, Vitest]
+  evidence:
+    store_in: "docs/test-report.md"
+    must_contain: [command_used, summary_output, date]
+    policy: "Only real run output. Missing results are reported as a gap (INV-06)."
+
+definition_of_done:
+  - code_merged_through_pull_request
+  - reviewed_by_another_team_member
+  - unit_tests_pass
+  - input_validation_present
+  - api_reference_updated
+  - no_secrets_or_credentials_in_the_diff
+  - README_run_instructions_still_valid
+  - relevant_ADR_written_if_a_decision_was_made
+
+ci_gates:
+  - id: lint
+    command_examples: ["ruff check .", "gofmt -l .", "eslint ."]
+  - id: format
+    command_examples: ["ruff format --check .", "prettier --check ."]
+  - id: tests
+    command_examples: ["pytest -q"]
+  - id: build_images
+    command_examples: ["podman build -f deploy/Containerfile.backend ."]
+  - id: docs_present
+    description: "Fail if an endpoint exists without a matching entry in the API reference"
+
+release:
+  branch: "release-vX.Y.Z"
+  tag_command: "git tag -a v1.0.0 -m \"Release version 1.0.0\""
+  push_command: "git push origin v1.0.0"
+  release_notes: "docs/release-notes.md — new features, fixed bugs, other changes"

@@ -1,0 +1,99 @@
+# Content-generation context: what the report is actually about.
+# Formatting is defined elsewhere; this file constrains the substance.
+spec_version: "1.0.0"
+kind: project_context
+
+engagement_model:
+  metaphor: "Кожна студентська команда — умовна IT-компанія, що розробляє власний продукт"
+  selection_criteria:
+    - market_orientation
+    - achievable_within_the_internship_period
+    - potential_for_further_scaling
+    - team_work_and_analytical_skills_development
+
+topics:
+  - id: T1
+    company: "Компанія 1"
+    title: "Мобільний застосунок для запису в спортзал і планування тренувань"
+    core_features:
+      - online_class_booking
+      - personal_results_tracking
+      - class_calendar_with_push_reminders
+  - id: T2
+    company: "Компанія 2"
+    title: "Вебсистема онлайн-замовлень у кав'ярні"
+    core_features:
+      - menu_with_photos_and_prices
+      - cart_and_pre_order
+      - admin_panel_for_menu_management
+  - id: T3
+    company: "Компанія 3"
+    title: "Вебплатформа для організації подій і заходів"
+    core_features:
+      - event_creation_and_announcement
+      - participant_registration
+      - post_event_feedback_module
+  - id: T4
+    company: "Компанія 4"
+    title: "Мобільний застосунок для ветеринарної клініки"
+    core_features:
+      - online_appointment
+      - pet_records_database
+      - vaccination_and_medication_reminders
+
+selected_topic: null   # MUST be set before content generation
+
+# Stack direction proposed by the user in request.md (practical session 10).
+# Treated as a preference to justify, not as an immutable decision.
+proposed_stack:
+  status: proposed_by_user
+  backend_primary:
+    language: Python
+    rationale_axes: [development_speed, ecosystem, ORM_maturity, testing_tooling]
+    candidates:
+      frameworks: [FastAPI, Django, Flask]
+      orm: [SQLAlchemy, Django_ORM]
+      testing: [pytest]
+  backend_secondary:
+    language: Go
+    scope: "окремий вебсервіс/шлюз (edge service)"
+    rationale_axes: [concurrency, low_latency, small_container_image, static_binary]
+    justification_requirement: >-
+      A polyglot backend must be justified by a concrete non-functional requirement
+      (throughput, latency, static binary size). Otherwise document it as a rejected
+      alternative — an unjustified second language is a defensible-review risk.
+  database:
+    candidates: [PostgreSQL, MySQL, MongoDB, Redis]
+    default: PostgreSQL
+    deployment: separate_container
+    persistence: named_volume
+  containerization:
+    runtime: Podman
+    compose: podman-compose
+    notes:
+      - "rootless mode by default"
+      - "podman generate systemd / quadlet for autostart"
+      - "separate volume for the database — explicitly required by the user"
+  decision_record_required: true
+  decision_record_format: ADR   # architecture decision record, see PZ-09/PZ-10
+
+architecture_defaults:
+  style: three_tier
+  alternatives_to_discuss: [monolith, microservices]
+  diagram_source: plantuml
+  components: [user, client, api_gateway, backend_services, database, external_services]
+
+quality_gates:
+  - api_documented: "OpenAPI/Swagger or equivalent (PZ-15)"
+  - input_validation_on_every_endpoint: true
+  - unit_tests: {min: 3, max_recommended: 5}
+  - performance_bottlenecks_identified: {min: 3}
+  - documented_bugs: {min: 3}
+  - cross_platform_matrix: {min: 3}
+
+academic_integrity:
+  rules:
+    - "Third-party code, text and images must be attributed at the point of use."
+    - "Every borrowed fragment must appear in the reference list."
+    - "Generated or borrowed material must not be presented as the team's own work."
+    - "Screenshots and metrics must come from the actual system (INV-06)."

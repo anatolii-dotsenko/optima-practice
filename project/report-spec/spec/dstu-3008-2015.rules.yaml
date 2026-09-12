@@ -1,0 +1,527 @@
+# Atomic, addressable rules extracted from ДСТУ 3008:2015.
+# `normative`: MUST (обов'язково) | SHOULD (рекомендовано) | MAY (дозволено)
+# `check`: machine-executable check descriptor consumed by tools/validate_report.py.
+#          `check: null` means the rule is content-level and needs human or LLM review.
+spec_version: "1.0.0"
+kind: rule_set
+standard: "ДСТУ 3008:2015"
+
+rules:
+  # --- Structure -----------------------------------------------------------
+  - id: DSTU.3.5.1.mandatory_elements
+    clause: "3.5.1"
+    normative: MUST
+    title: Mandatory structural elements
+    requirement: >-
+      The report must contain: Титульний аркуш, Реферат, Вступ,
+      Змістова частина (суть звіту), Висновки.
+    check:
+      type: required_sections
+      keys: [title_page, abstract, introduction, body, conclusions]
+
+  - id: DSTU.3.5.2.reference_list_required
+    clause: "3.5.2"
+    normative: MUST
+    title: Reference list required when citations exist
+    requirement: >-
+      If the text cites publications, the element "Перелік джерел посилання" is mandatory.
+    check:
+      type: conditional_section
+      when: citations_present
+      requires: reference_list
+
+  - id: DSTU.4.3.3.abstract_content
+    clause: "4.3.3"
+    normative: MUST
+    title: Abstract content
+    requirement: >-
+      Реферат must state volume of the report, number of parts, figures, tables,
+      appendices and sources, then the keyword list, then the condensed description.
+    check:
+      type: regex_in_section
+      section: abstract
+      pattern: "\\d+\\s*с\\.|\\d+\\s*стор"
+
+  - id: DSTU.4.3.8.keywords
+    clause: "4.3.8"
+    normative: MUST
+    title: Keywords
+    requirement: >-
+      5 to 15 keywords (or phrases), uppercase, in one paragraph, nominative singular,
+      alphabetically ordered, comma-separated, placed before the abstract text.
+    check:
+      type: keywords
+      min: 5
+      max: 15
+      uppercase: true
+      separator: ","
+
+  - id: DSTU.4.4.1.toc_condition
+    clause: "4.4.1"
+    normative: MUST
+    title: Table of contents applicability
+    requirement: >-
+      "Зміст" is compiled when the report has at least two sections, or one section
+      plus an appendix, with at least ten pages in total.
+    check: null
+
+  - id: DSTU.5.1.2.introduction_content
+    clause: "5.1.2"
+    normative: MUST
+    title: Introduction content
+    requirement: >-
+      Вступ states the current state of the object of study, world trends, relevance
+      and grounds for the work, its goal and possible fields of application,
+      and its relation to other works.
+    check: null
+
+  - id: DSTU.5.3.2.conclusions_content
+    clause: "5.3.2"
+    normative: MUST
+    title: Conclusions content
+    requirement: >-
+      Висновки present the most important scientific and practical results, their
+      assessment against the current state of knowledge, degree of adoption and
+      possible fields of use, significance of the work and expediency of further research.
+    check: null
+
+  - id: DSTU.5.5.1.reference_order
+    clause: "5.5.1"
+    normative: MUST
+    title: Reference list ordering
+    requirement: >-
+      Bibliographic entries are listed in order of first mention in the text;
+      their ordinal numbers must match the in-text numeric references.
+    check:
+      type: reference_order
+
+  - id: DSTU.5.5.2.bibliographic_format
+    clause: "5.5.2"
+    normative: MUST
+    title: Bibliographic description format
+    requirement: "Bibliographic descriptions follow ДСТУ ГОСТ 7.1."
+    check: null
+
+  # --- Page setup ----------------------------------------------------------
+  - id: DSTU.7.1.5.font
+    clause: "7.1.5"
+    normative: MUST
+    title: Body typeface
+    requirement: "Times New Roman, black, upright, size 14 pt, line spacing 1.5–2."
+    check:
+      type: font
+      family: "Times New Roman"
+      size_pt: 14
+      color: "#000000"
+      italic: false
+      line_spacing_range: [1.5, 2.0]
+
+  - id: DSTU.7.1.6.page_format
+    clause: "7.1.6"
+    normative: MUST
+    title: Page format
+    requirement: "A4 (210 × 297 mm), printed on one side; A3 allowed where needed."
+    check:
+      type: page_size
+      width_mm: 210
+      height_mm: 297
+      tolerance_mm: 1
+
+  - id: DSTU.7.1.11.margins
+    clause: "7.1.11"
+    normative: SHOULD
+    title: Margins
+    requirement: "Top and bottom ≥ 20 mm, left ≥ 25 mm, right ≥ 10 mm."
+    check:
+      type: margins_min
+      top_mm: 20
+      bottom_mm: 20
+      left_mm: 25
+      right_mm: 10
+
+  - id: DSTU.7.1.16.proper_names
+    clause: "7.1.16"
+    normative: MUST
+    title: Proper names
+    requirement: >-
+      Surnames and names of institutions, organizations and firms are given in the
+      original language; transliteration is allowed if the original is provided at first mention.
+    check: null
+
+  - id: DSTU.7.1.18.unnumbered_elements
+    clause: "7.1.18"
+    normative: MUST
+    title: Unnumbered structural elements
+    requirement: >-
+      Список авторів, Реферат, Зміст, Скорочення та умовні познаки, Передмова,
+      Вступ, Висновки, Рекомендації, Перелік джерел посилання are not numbered;
+      their names serve as headings.
+    check:
+      type: unnumbered_headings
+      headings:
+        - "СПИСОК АВТОРІВ"
+        - "РЕФЕРАТ"
+        - "ЗМІСТ"
+        - "ПЕРЕЛІК УМОВНИХ ПОЗНАЧЕНЬ"
+        - "ПЕРЕДМОВА"
+        - "ВСТУП"
+        - "ВИСНОВКИ"
+        - "РЕКОМЕНДАЦІЇ"
+        - "ПЕРЕЛІК ДЖЕРЕЛ ПОСИЛАННЯ"
+
+  - id: DSTU.7.1.19.headings_required
+    clause: "7.1.19"
+    normative: MUST
+    title: Headings for sections and subsections
+    requirement: "Sections and subsections must have headings; items may have them."
+    check: null
+
+  - id: DSTU.7.1.20.section_heading_style
+    clause: "7.1.20"
+    normative: MUST
+    title: Section heading style
+    requirement: >-
+      Headings of structural elements and of sections are printed from the paragraph
+      indent, uppercase, bold, without a trailing dot; centering is allowed.
+    check:
+      type: heading_style
+      level: section
+      case: upper
+      bold: true
+      trailing_dot: false
+
+  - id: DSTU.7.1.21.subsection_heading_style
+    clause: "7.1.21"
+    normative: MUST
+    title: Subsection heading style
+    requirement: >-
+      Headings of subsections, items and sub-items are printed from the paragraph
+      indent, starting with a capital letter, without a trailing dot.
+    check:
+      type: heading_style
+      level: subsection
+      case: sentence
+      trailing_dot: false
+
+  - id: DSTU.7.1.22.paragraph_indent
+    clause: "7.1.22"
+    normative: MUST
+    title: Paragraph indent
+    requirement: "Uniform throughout the report, equal to five characters (≈1.25 cm)."
+    check:
+      type: first_line_indent
+      value_cm: 1.25
+      tolerance_cm: 0.1
+
+  - id: DSTU.7.1.23.heading_hyphenation
+    clause: "7.1.23"
+    normative: MUST
+    title: No hyphenation in headings
+    requirement: >-
+      Multi-sentence headings are separated by a dot; word hyphenation in headings is forbidden.
+    check:
+      type: heading_hyphenation
+
+  - id: DSTU.7.1.24.heading_spacing
+    clause: "7.1.24"
+    normative: MUST
+    title: Spacing around headings
+    requirement: >-
+      Distance between a heading, a note or an example and the adjacent text is at least
+      two line intervals.
+    check:
+      type: heading_spacing
+      min_line_intervals: 2
+
+  - id: DSTU.7.1.25.orphan_heading
+    clause: "7.1.25"
+    normative: MUST
+    title: No heading on the last line of a page
+    requirement: "A heading must not be placed on the last line of a page."
+    check: null
+
+  # --- Numbering -----------------------------------------------------------
+  - id: DSTU.7.3.1.page_numbers
+    clause: "7.3.1"
+    normative: MUST
+    title: Page numbering
+    requirement: >-
+      Continuous arabic numbering including appendices; the number is placed in the
+      top right corner without a trailing dot.
+    check:
+      type: page_numbering
+      position: top_right
+
+  - id: DSTU.7.3.3.title_page_number
+    clause: "7.3.3"
+    normative: MUST
+    title: Title page numbering
+    requirement: "The title page is counted but its number is not printed."
+    check:
+      type: title_page_number_hidden
+
+  - id: DSTU.7.4.2.section_numbers
+    clause: "7.4.2"
+    normative: MUST
+    title: Section numbering
+    requirement: >-
+      Sections are numbered with arabic numerals without a trailing dot, starting from 1,
+      within the main body only.
+    check:
+      type: heading_numbering
+      pattern: "^\\d+(\\.\\d+)*(?!\\.)\\s+\\S"
+
+  - id: DSTU.7.4.6.single_item_not_numbered
+    clause: "7.4.6"
+    normative: MUST
+    title: Single item is not numbered
+    requirement: >-
+      If a section or subsection consists of a single item, or an item of a single sub-item,
+      that item is not numbered.
+    check: null
+
+  # --- Figures -------------------------------------------------------------
+  - id: DSTU.7.5.1.figure_label
+    clause: "7.5.1"
+    normative: MUST
+    title: Uniform figure label
+    requirement: >-
+      All graphic material (sketches, diagrams, graphs, schemes, photographs, drawings)
+      uses the single caption word "Рисунок".
+    check:
+      type: figure_caption
+      pattern: "^Рисунок\\s+(\\d+(\\.\\d+)?|[А-ЯҐЄІЇ]\\.\\d+)\\s+—\\s+.+[^.]$"
+
+  - id: DSTU.7.5.2.figure_placement
+    clause: "7.5.2"
+    normative: MUST
+    title: Figure placement
+    requirement: >-
+      A figure is placed immediately after the text that first references it, or as close
+      as possible on the next page; otherwise in an appendix.
+    check:
+      type: object_reference_precedes
+      object: figure
+
+  - id: DSTU.7.5.6.figure_numbering
+    clause: "7.5.6"
+    normative: MUST
+    title: Figure numbering
+    requirement: >-
+      Continuous arabic numbering, except figures in appendices; numbering within a
+      section (e.g. "Рисунок 3.2") is allowed.
+    check:
+      type: sequential_numbering
+      object: figure
+
+  - id: DSTU.7.5.9.figure_caption_position
+    clause: "7.5.9"
+    normative: MUST
+    title: Figure caption position
+    requirement: >-
+      The caption starts with a capital letter and is placed under the figure, centred,
+      e.g. "Рисунок 2.1 — Схема устатковання".
+    check:
+      type: figure_caption_position
+      position: below
+      alignment: center
+
+  # --- Tables --------------------------------------------------------------
+  - id: DSTU.7.6.3.table_placement
+    clause: "7.6.3"
+    normative: MUST
+    title: Table placement and reference
+    requirement: >-
+      A table is placed immediately after the text that first mentions it or on the next
+      page; every table must be referenced in the text by its number.
+    check:
+      type: object_reference_precedes
+      object: table
+
+  - id: DSTU.7.6.4.table_numbering
+    clause: "7.6.4"
+    normative: MUST
+    title: Table numbering
+    requirement: >-
+      Continuous arabic numbering, except tables in appendices; numbering within a
+      section (e.g. "Таблиця 2.1") is allowed.
+    check:
+      type: sequential_numbering
+      object: table
+
+  - id: DSTU.7.6.8.table_caption_position
+    clause: "7.6.8"
+    normative: MUST
+    title: Table caption position
+    requirement: >-
+      The table name starts with a capital letter and is placed above the table from the
+      paragraph indent.
+    check:
+      type: table_caption
+      position: above
+      pattern: "^Таблиця\\s+(\\d+(\\.\\d+)?|[А-ЯҐЄІЇ]\\.\\d+)\\s+—\\s+.+[^.]$"
+
+  - id: DSTU.7.6.9.table_split
+    clause: "7.6.9"
+    normative: MUST
+    title: Splitting a table
+    requirement: >-
+      When a table is split, the header and stub are repeated in each part; the word
+      "Таблиця" appears only above the first part, other parts get
+      "Продовження таблиці N" or "Кінець таблиці N" from the paragraph indent.
+    check: null
+
+  - id: DSTU.7.6.10.column_headers
+    clause: "7.6.10"
+    normative: MUST
+    title: Column headers
+    requirement: >-
+      Column headers start with a capital letter, sub-headers with a lowercase letter if
+      they continue the header sentence; no trailing dots; nouns preferably in singular.
+    check: null
+
+  # --- Lists, notes, footnotes --------------------------------------------
+  - id: DSTU.7.7.2.list_markers
+    clause: "7.7.2"
+    normative: MUST
+    title: List markers
+    requirement: >-
+      Lists that are never referenced use a dash; referenced lists use lowercase Ukrainian
+      letters, then arabic numerals, then dashes; a closing bracket follows the letter or numeral.
+    check:
+      type: list_markers
+
+  - id: DSTU.7.7.4.list_item_case
+    clause: "7.7.4"
+    normative: MUST
+    title: List item case and indent
+    requirement: >-
+      Each list item starts with a lowercase letter, indented relative to the parent level.
+    check: null
+
+  - id: DSTU.7.8.3.note_format
+    clause: "7.8.3"
+    normative: MUST
+    title: Note format
+    requirement: >-
+      A single note is not numbered; the word "Примітка" is printed in 12 pt, single
+      spacing, from the paragraph indent, with a dot; the note text follows on the same line.
+    check:
+      type: note_format
+      font_size_pt: 12
+      line_spacing: 1.0
+
+  - id: DSTU.7.9.3.footnote_limit
+    clause: "7.9.3"
+    normative: MUST
+    title: Footnote limit
+    requirement: "No more than four footnotes per page; footnote text in 12 pt, single spacing."
+    check:
+      type: footnote_limit
+      max_per_page: 4
+
+  # --- Formulas ------------------------------------------------------------
+  - id: DSTU.7.10.1.formula_layout
+    clause: "7.10.1"
+    normative: MUST
+    title: Formula layout
+    requirement: >-
+      Formulas and equations are centred on a separate line directly after the text that
+      mentions them, with at least one blank line above and below.
+    check:
+      type: formula_layout
+
+  - id: DSTU.7.10.2.formula_numbering
+    clause: "7.10.2"
+    normative: MUST
+    title: Formula numbering scope
+    requirement: "Only formulas referenced in the text or an appendix are numbered."
+    check: null
+
+  - id: DSTU.7.10.4.formula_number_position
+    clause: "7.10.4"
+    normative: MUST
+    title: Formula number position
+    requirement: >-
+      The number is printed at the level of the formula, at the extreme right, in round
+      brackets, e.g. (3); for multi-line formulas at the level of the last line.
+    check:
+      type: formula_number
+      pattern: "^\\(\\d+(\\.\\d+)?\\)$|^\\([А-ЯҐЄІЇ]\\.\\d+\\)$"
+
+  - id: DSTU.7.10.6.symbol_legend
+    clause: "7.10.6"
+    normative: MUST
+    title: Symbol legend
+    requirement: >-
+      Symbols are explained directly below the formula, in the order of appearance,
+      on a new line without paragraph indent, starting with "де" and without a colon.
+    check:
+      type: formula_legend
+      keyword: "де"
+      colon_after_keyword: false
+
+  - id: DSTU.7.10.12.numeric_values
+    clause: "7.10.12"
+    normative: MUST
+    title: Numeric values
+    requirement: >-
+      Tolerances are written as "(65 ± 3) %"; ranges use "від … до …";
+      dimensions repeat the unit: "80 мм × 25 мм × 50 мм".
+    check: null
+
+  # --- References ----------------------------------------------------------
+  - id: DSTU.7.11.2.internal_references
+    clause: "7.11.2"
+    normative: MUST
+    title: Internal references
+    requirement: >-
+      Use forms such as "у розділі 4", "див. 2.1", "відповідно до 2.3.4.1",
+      "(рисунок 1.3)", "відповідно до таблиці 3.2", "згідно з формулою (3.1)", "(додаток Г)".
+    check: null
+
+  - id: DSTU.7.11.3.source_references
+    clause: "7.11.3"
+    normative: SHOULD
+    title: Source references
+    requirement: >-
+      Cite sources by their ordinal number in square brackets, e.g. "у роботах [2]—[3]".
+    check:
+      type: citation_format
+      pattern: "\\[\\d+\\]"
+
+  # --- Appendices ----------------------------------------------------------
+  - id: DSTU.6.2.2.appendix_heading
+    clause: "6.2.2"
+    normative: MUST
+    title: Appendix heading
+    requirement: >-
+      Each appendix has a heading printed at the top, sentence case, centred; above it,
+      in the middle of the line, the word "ДОДАТОК" and its letter; the appendix text
+      starts on the next page.
+    check:
+      type: appendix_heading
+      label_pattern: "^ДОДАТОК\\s+[А-ЯA-Z]$"
+
+  - id: DSTU.7.15.1.appendix_letters
+    clause: "7.15.1"
+    normative: MUST
+    title: Appendix letters
+    requirement: >-
+      Appendices are designated by consecutive uppercase Ukrainian letters excluding
+      Ґ, Є, З, І, Ї, Й, О, Ч, Ь; latin letters excluding I and O are allowed;
+      arabic numerals only after the alphabet is exhausted.
+    check:
+      type: appendix_letters
+      forbidden: ["Ґ","Є","З","І","Ї","Й","О","Ч","Ь"]
+      forbidden_latin: ["I","O"]
+
+  - id: DSTU.7.15.3.appendix_object_numbering
+    clause: "7.15.3"
+    normative: MUST
+    title: Numbering inside appendices
+    requirement: >-
+      Figures, tables, formulas and equations inside an appendix are numbered within that
+      appendix, prefixed by its letter, e.g. "рисунок Г.3", "таблиця А.2", "формула (А.1)".
+    check:
+      type: appendix_object_numbering
