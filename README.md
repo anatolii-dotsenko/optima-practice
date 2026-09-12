@@ -14,4 +14,5 @@ The complete software project, specifications, architecture documentation, and d
 - **User Manual:** [`project/docs/user-manual.md`](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/docs/user-manual.md)
 - **Architecture Decision Records:** [`project/docs/adr/`](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/docs/adr/)
 - **API Reference (OpenAPI 3.1):** [`project/docs/api/`](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/docs/api/)
+- **Google Cloud Run Deployment Guide:** [`project/docs/cloud-run-deployment.md`](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/docs/cloud-run-deployment.md)
 - **Practice Specification Set:** [`project/report-spec/`](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/report-spec/)

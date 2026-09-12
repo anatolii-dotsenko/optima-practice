@@ -127,6 +127,7 @@ podman ps
 - **End-User & Barista Manual:** [docs/user-manual.md](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/docs/user-manual.md)
 - **Test Report (50/50 passed):** [docs/test-report.md](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/docs/test-report.md)
 - **Defect Log:** [docs/defect-log.md](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/docs/defect-log.md)
+- **Google Cloud Run Deployment Guide:** [docs/cloud-run-deployment.md](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/docs/cloud-run-deployment.md)
 - **Architecture Decision Records:** [docs/adr/](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/docs/adr/)
   - [ADR-0001: Three-Tier Architecture](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/docs/adr/0001-three-tier-architecture.md)
   - [ADR-0002: Selection of FastAPI](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/docs/adr/0002-fastapi-backend-framework.md)
