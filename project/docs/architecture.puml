@@ -1,37 +1,119 @@
-@startuml
+@startuml architecture
 !theme plain
+title Рисунок 1 — Компонентна трирівнева архітектура вебсистеми «Optima Coffee»
+
 skinparam componentStyle uml2
 skinparam monochrome false
 skinparam roundcorner 8
 skinparam shadowing false
+skinparam defaultFontName "Helvetica, Arial, sans-serif"
+skinparam defaultFontSize 12
 
-actor "Гість (Клієнт)" as Customer
-actor "Бариста / Адмін" as Barista
-
-package "Рівень представлення (Client Tier)" {
-  component [Вебклієнт Vanilla JS\n(SPA, Component-Based UI)] as WebClient
+skinparam package {
+    BackgroundColor #F8F9FA
+    BorderColor #2C3E50
+    FontColor #2C3E50
+    FontStyle bold
 }
 
-package "Рівень сервісу (Backend API Tier - FastAPI)" {
-  portin "HTTP REST Gateway" as Gateway
-  component [API Layer (FastAPI Routers)] as ApiLayer
-  component [Auth & RBAC Middleware] as SecurityLayer
-  component [Service Layer (Business Logic)] as ServiceLayer
-  component [Repository Layer (SQLAlchemy ORM)] as RepoLayer
+skinparam component {
+    BackgroundColor #FFFFFF
+    BorderColor #34495E
+    ArrowColor #2980B9
+}
+
+skinparam database {
+    BackgroundColor #EBF5FB
+    BorderColor #2980B9
+}
+
+actor "Гість кав'ярні\n(Клієнт)" as Customer #D4EFDF
+actor "Бариста / Адміністратор\n(Персонал)" as Barista #FCF3CF
+
+package "Клієнтський рівень (Presentation / Client Tier)" {
+    component "Вебзастосунок (Single Page Application)\nVanilla JavaScript (ES6+), HTML5, CSS3" as SPA {
+        component [Модуль каталогу меню\n(Фільтрація страв, фото, ціни)] as MenuUI
+        component [Інтерактивний кошик\n(Інлайн-зміна кількості +/-, тайм-слот)] as CartUI
+        component [Модуль замовлень гостя\n(Історія, живий трекінг статусів)] as OrdersUI
+        component [Панель бариста (АРМ)\n(Оперативний стоп-лист, жива черга)] as AdminUI
+        component [HTTP Клієнт API\n(Fetch, Bearer токени, обробка помилок)] as ApiClient
+    }
+}
+
+package "Серверний рівень (Application / API Tier - Python 3.11+ / FastAPI)" {
+    portin "HTTP REST Gateway (/api/v1)" as Gateway
+    
+    component "Шар безпеки та автентифікації\n(app/core/security)" as SecurityLayer {
+        component [JWT Сервіс (HS256, 60 хв)] as JWTModule
+        component [Хешування паролів (bcrypt)] as BcryptModule
+        component [RBAC Dependency\n(Клієнт / Бариста-адміністратор)] as RBACModule
+    }
+
+    component "Шар маршрутизації та DTO\n(app/api/v1)" as ApiLayer {
+        component [Контролери Auth (/auth)] as AuthRouter
+        component [Контролери Menu (/menu)] as MenuRouter
+        component [Контролери Orders (/orders)] as OrderRouter
+        component [Pydantic v2 DTOs\n(Сувора валідація вхідних даних)] as DTOValidation
+    }
+
+    component "Сервісний шар бізнес-логіки\n(app/services - Ізольований від вебфреймворку)" as ServiceLayer {
+        component [AuthService\n(Реєстрація, автентифікація)] as AuthService
+        component [MenuService\n(Керування стравами, стоп-лист)] as MenuService
+        component [OrderService\n(Серверний розрахунок вартості, state machine)] as OrderService
+    }
+
+    component "Шар доступу до даних / Репозиторії\n(app/repositories - SQLAlchemy 2.0 ORM)" as RepoLayer {
+        component [UserRepository] as UserRepo
+        component [MenuRepository] as MenuRepo
+        component [OrderRepository] as OrderRepo
+    }
 }
 
 package "Рівень збереження даних (Database Tier)" {
-  database "PostgreSQL 16\n(Named Volume)" as Database
+    database "СУБД PostgreSQL 16\n(Іменований том: coffee_shop_pgdata)" as Database {
+        folder "Реляційні таблиці (3NF)" {
+            [users]
+            [categories]
+            [menu_items]
+            [orders]
+            [order_items]
+        }
+    }
 }
 
-Customer --> WebClient : Оформлення замовлення\nПерегляд меню
-Barista --> WebClient : Керування чергою\nСтоп-лист
+' Зв'язки взаємодії користувачів з інтерфейсом
+Customer --> MenuUI : Перегляд страв
+Customer --> CartUI : Збір кошика (+/-)
+Customer --> OrdersUI : Відстеження статусу
+Barista --> AdminUI : Черга замовлень & Стоп-лист
 
-WebClient --> Gateway : HTTPS / JSON API
-Gateway --> SecurityLayer : Валідація токенів JWT
-SecurityLayer --> ApiLayer : Передача перевіреного контексту
-ApiLayer --> ServiceLayer : Виклик методів бізнес-логіки
-ServiceLayer --> RepoLayer : Запити доступу до даних
-RepoLayer --> Database : SQL-запити (ACID)
+' Зв'язок фронтенду через API-клієнт
+MenuUI --> ApiClient
+CartUI --> ApiClient
+OrdersUI --> ApiClient
+AdminUI --> ApiClient
+
+ApiClient --> Gateway : HTTPS / JSON (/api/v1)\nЗаголовок Authorization: Bearer <token>
+
+' Потік всередині бекенду (суворо односпрямований)
+Gateway --> RBACModule : Перевірка токена
+RBACModule --> ApiLayer : Авторизований контекст
+ApiLayer --> ServiceLayer : DTO об'єкти (чисті дані)
+ServiceLayer --> RepoLayer : Виклики доменних методів
+RepoLayer --> Database : SQL запити (транзакції ACID)
+
+note right of ServiceLayer
+  <b>Архітектурний інваріант:</b>
+  Сервісний шар містить виключно
+  доменну бізнес-логіку кав'ярні
+  та НЕ імпортує FastAPI/Starlette.
+end note
+
+note bottom of Database
+  <b>Персистентність:</b>
+  Дані зберігаються на томі pgdata,
+  що унеможливлює втрату замовлень
+  при перезапуску контейнерів.
+end note
 
 @enduml

@@ -54,9 +54,11 @@ project/
 │   ├── Containerfile.frontend   # Unprivileged nginx static runtime
 │   └── podman-compose.yml       # Orchestration with named volume pgdata
 ├── docs/
-│   ├── adr/                 # Architecture Decision Records (ADR-0001 to ADR-0005)
+│   ├── adr/                 # Architecture Decision Records (ADR-0001 to ADR-0008)
 │   └── api/                 # OpenAPI 3.1 schema & Markdown API reference
 ├── report-spec/             # Specifications and report generation tooling
+├── report.md                # Practice Report in Markdown (ДСТУ 3008:2015)
+├── report.docx              # Compiled Practice Report document (.docx)
 ├── AGENTS.md                # Normalized engineering specification instructions
 └── .env.example             # Environment variable template
 ```
