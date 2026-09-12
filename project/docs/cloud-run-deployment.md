@@ -111,13 +111,8 @@ gcloud artifacts repositories create optima-repo \
    export BACKEND_IMAGE="${REGION}-docker.pkg.dev/${PROJECT_ID}/optima-repo/coffee-backend:latest"
 
    gcloud builds submit . \
-       --config - <<EOF
-   steps:
-   - name: 'gcr.io/cloud-builders/docker'
-     args: ['build', '-f', 'deploy/Containerfile.backend', '-t', '${BACKEND_IMAGE}', '.']
-   images:
-   - '${BACKEND_IMAGE}'
-   EOF
+       --config=deploy/cloudbuild-backend.yaml \
+       --substitutions=_IMAGE="${BACKEND_IMAGE}"
    ```
 
 3. Розгорніть бекенд у Cloud Run:
@@ -163,23 +158,17 @@ gcloud artifacts repositories create optima-repo \
    ```bash
    export FRONTEND_IMAGE="${REGION}-docker.pkg.dev/${PROJECT_ID}/optima-repo/coffee-frontend:latest"
 
-   gcloud builds submit . \
-       --config - <<EOF
-   steps:
-   - name: 'gcr.io/cloud-builders/docker'
-     args: ['build', '-f', 'deploy/Containerfile.frontend', '-t', '${FRONTEND_IMAGE}', '.']
-   images:
-   - '${FRONTEND_IMAGE}'
-   EOF
-   ```
+    gcloud builds submit . \
+        --config=deploy/cloudbuild-frontend.yaml \
+        --substitutions=_IMAGE="${FRONTEND_IMAGE}"
+    ```
 
 3. Розгорніть фронтенд у Cloud Run:
-   ```bash
-   gcloud run deploy optima-coffee-frontend \
-       --image=$FRONTEND_IMAGE \
-       --region=$REGION \
-       --platform=managed \
-       --allow-unauthenticated \
+    ```bash
+    gcloud run deploy optima-coffee-frontend \
+        --image=$FRONTEND_IMAGE \
+        --region=$REGION \
+        --allow-unauthenticated \
        --port=8080 \
        --memory=256Mi \
        --cpu=1 \

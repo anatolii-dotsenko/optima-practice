@@ -75,13 +75,8 @@ gcloud artifacts repositories create "${REPO_NAME}" \
 echo -e "\n${BLUE}[3/6] Building Backend Container with Cloud Build...${NC}"
 gcloud builds submit . \
     --project="${GCP_PROJECT}" \
-    --config - <<EOF
-steps:
-- name: 'gcr.io/cloud-builders/docker'
-  args: ['build', '-f', 'deploy/Containerfile.backend', '-t', '${BACKEND_IMG}', '.']
-images:
-- '${BACKEND_IMG}'
-EOF
+    --config=deploy/cloudbuild-backend.yaml \
+    --substitutions=_IMAGE="${BACKEND_IMG}"
 
 echo -e "\n${BLUE}[4/6] Deploying Backend to Cloud Run...${NC}"
 JWT_SECRET="${SECRET_KEY:-$(openssl rand -hex 32 2>/dev/null || echo 'production-super-secret-key-32chars-min')}"
@@ -89,7 +84,6 @@ JWT_SECRET="${SECRET_KEY:-$(openssl rand -hex 32 2>/dev/null || echo 'production
 gcloud run deploy optima-coffee-backend \
     --image="${BACKEND_IMG}" \
     --region="${GCP_REGION}" \
-    --platform=managed \
     --allow-unauthenticated \
     --port=8000 \
     --memory=512Mi \
@@ -112,13 +106,8 @@ EOF
 
 gcloud builds submit . \
     --project="${GCP_PROJECT}" \
-    --config - <<EOF
-steps:
-- name: 'gcr.io/cloud-builders/docker'
-  args: ['build', '-f', 'deploy/Containerfile.frontend', '-t', '${FRONTEND_IMG}', '.']
-images:
-- '${FRONTEND_IMG}'
-EOF
+    --config=deploy/cloudbuild-frontend.yaml \
+    --substitutions=_IMAGE="${FRONTEND_IMG}"
 
 echo -e "\n${BLUE}[6/6] Deploying Frontend to Cloud Run & Updating CORS...${NC}"
 gcloud run deploy optima-coffee-frontend \
