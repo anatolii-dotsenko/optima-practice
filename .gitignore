@@ -450,7 +450,6 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
-.env
 .venv/
 venv/
 ENV/
