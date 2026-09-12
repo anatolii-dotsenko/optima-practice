@@ -58,7 +58,6 @@ project/
 │   └── api/                 # OpenAPI 3.1 schema & Markdown API reference
 ├── report-spec/             # Specifications and report generation tooling
 ├── report.md                # Practice Report in Markdown (ДСТУ 3008:2015)
-├── report.docx              # Compiled Practice Report document (.docx)
 ├── AGENTS.md                # Normalized engineering specification instructions
 └── .env.example             # Environment variable template
 ```
@@ -121,7 +120,8 @@ podman ps
 
 ## Documentation Links
 
-- **Practice Report (ДСТУ 3008:2015):** [report.docx](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/report.docx)
+- **Practice Report (Markdown):** [report.md](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/report.md)
+- **Practice Report (Google Docs, ДСТУ 3008:2015):** [Google Docs Document](https://docs.google.com/document/d/1Cs6HnUGZj_0T1uJMkrIG5QCZNgycH28b9k-fGj9Tzh8/edit?usp=sharing)
 - **Technical Specification (ТЗ):** [docs/technical-specification.md](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/docs/technical-specification.md)
 - **Architecture Overview & Diagram:** [docs/architecture.md](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/docs/architecture.md) ([PlantUML](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/docs/architecture.puml))
 - **End-User & Barista Manual:** [docs/user-manual.md](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/docs/user-manual.md)

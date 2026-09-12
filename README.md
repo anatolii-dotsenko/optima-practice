@@ -9,7 +9,7 @@ The complete software project, specifications, architecture documentation, and d
 - **Frontend Client:** [`project/frontend/`](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/frontend/)
 - **Containerization (Podman):** [`project/deploy/`](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/deploy/)
 - **Practice Report (Markdown):** [`project/report.md`](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/report.md)
-- **Practice Report (.docx, ДСТУ 3008:2015):** [`project/report.docx`](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/report.docx)
+- **Practice Report (Google Docs, ДСТУ 3008:2015):** [Google Docs Document](https://docs.google.com/document/d/1Cs6HnUGZj_0T1uJMkrIG5QCZNgycH28b9k-fGj9Tzh8/edit?usp=sharing)
 - **Technical Specification:** [`project/docs/technical-specification.md`](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/docs/technical-specification.md)
 - **User Manual:** [`project/docs/user-manual.md`](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/docs/user-manual.md)
 - **Architecture Decision Records:** [`project/docs/adr/`](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/docs/adr/)
