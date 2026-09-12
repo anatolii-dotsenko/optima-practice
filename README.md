@@ -1,6 +1,6 @@
 # Вебсистема онлайн-замовлень у кав'ярні «Optima Coffee»
 
-[![CI Pipeline](https://github.com/anatolii-dotsenko/optima-practice/actions/workflows/ci.yml/badge.svg)](https://github.com/anatolii-dotsenko/optima-practice/actions/workflows/ci.yml)
+[![CI Pipeline](https://github.com/anatolii-dotsenko/optima-practice/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/anatolii-dotsenko/optima-practice/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/Python-3.12-blue?logo=python)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688?logo=fastapi)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791?logo=postgresql)
