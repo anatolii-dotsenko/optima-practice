@@ -71,7 +71,7 @@ COMPUTE_SA="${PROJECT_NUMBER}-compute@developer.gserviceaccount.com"
 CLOUDBUILD_SA="${PROJECT_NUMBER}@cloudbuild.gserviceaccount.com"
 
 echo "Configuring permissions for service account ${COMPUTE_SA}..."
-for ROLE in "roles/storage.admin" "roles/logging.logWriter" "roles/artifactregistry.writer"; do
+for ROLE in "roles/storage.admin" "roles/logging.logWriter" "roles/artifactregistry.writer" "roles/cloudsql.client"; do
     gcloud projects add-iam-policy-binding "${GCP_PROJECT}" \
         --member="serviceAccount:${COMPUTE_SA}" \
         --role="${ROLE}" >/dev/null 2>&1 || true
