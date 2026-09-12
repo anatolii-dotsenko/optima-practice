@@ -1,0 +1,81 @@
+/* Design Tokens for Coffee Shop Client Application */
+
+:root {
+  /* Color Palette - Artisanal Coffee & Modern Warm Neutrals */
+  --color-brand-primary: #5c3d2e;
+  --color-brand-primary-hover: #482f23;
+  --color-brand-accent: #c68b59;
+  --color-brand-accent-light: #e8d0b3;
+  --color-brand-dark: #1e130c;
+
+  --color-bg-app: #faf7f2;
+  --color-bg-surface: #ffffff;
+  --color-bg-surface-elevated: #ffffff;
+  --color-bg-muted: #f0eae1;
+
+  --color-text-primary: #1e130c;
+  --color-text-secondary: #635248;
+  --color-text-muted: #948278;
+  --color-text-inverse: #ffffff;
+
+  /* State Feedback Colors */
+  --color-state-success-bg: #ecfdf5;
+  --color-state-success-border: #a7f3d0;
+  --color-state-success-text: #065f46;
+
+  --color-state-error-bg: #fef2f2;
+  --color-state-error-border: #fecaca;
+  --color-state-error-text: #991b1b;
+
+  --color-state-warning-bg: #fffbeb;
+  --color-state-warning-border: #fde68a;
+  --color-state-warning-text: #92400e;
+
+  --color-state-info-bg: #eff6ff;
+  --color-state-info-border: #bfdbfe;
+  --color-state-info-text: #1e40af;
+
+  /* Typography */
+  --font-family-display: "Outfit", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-family-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  --font-size-xs: 0.75rem;     /* 12px */
+  --font-size-sm: 0.875rem;    /* 14px */
+  --font-size-base: 1rem;      /* 16px */
+  --font-size-lg: 1.125rem;    /* 18px */
+  --font-size-xl: 1.25rem;     /* 20px */
+  --font-size-2xl: 1.5rem;     /* 24px */
+  --font-size-3xl: 1.875rem;   /* 30px */
+
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* Spacing System */
+  --space-1: 0.25rem;  /* 4px */
+  --space-2: 0.5rem;   /* 8px */
+  --space-3: 0.75rem;  /* 12px */
+  --space-4: 1rem;     /* 16px */
+  --space-5: 1.25rem;  /* 20px */
+  --space-6: 1.5rem;   /* 24px */
+  --space-8: 2rem;     /* 32px */
+  --space-10: 2.5rem;  /* 40px */
+  --space-12: 3rem;    /* 48px */
+
+  /* Borders & Radii */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-full: 9999px;
+  --border-subtle: 1px solid #e7ded4;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(35, 23, 9, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(35, 23, 9, 0.08), 0 2px 4px -2px rgba(35, 23, 9, 0.05);
+  --shadow-lg: 0 10px 15px -3px rgba(35, 23, 9, 0.1), 0 4px 6px -4px rgba(35, 23, 9, 0.05);
+
+  /* Animation Transitions */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+}

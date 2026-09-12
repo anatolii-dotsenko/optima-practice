@@ -41,7 +41,7 @@ topics:
       - pet_records_database
       - vaccination_and_medication_reminders
 
-selected_topic: null   # MUST be set before content generation
+selected_topic: T2   # Set to T2: Вебсистема онлайн-замовлень у кав'ярні
 
 # Stack direction proposed by the user in request.md (practical session 10).
 # Treated as a preference to justify, not as an immutable decision.

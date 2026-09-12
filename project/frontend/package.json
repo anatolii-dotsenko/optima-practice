@@ -1,0 +1,13 @@
+{
+  "name": "coffee-shop-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Frontend client application for Coffee Shop Online Ordering System",
+  "scripts": {
+    "dev": "npx serve -s . -l 3000",
+    "start": "npx serve -s . -l 3000"
+  },
+  "keywords": ["coffee-shop", "spa", "frontend"],
+  "author": "Engineering Team",
+  "license": "MIT"
+}

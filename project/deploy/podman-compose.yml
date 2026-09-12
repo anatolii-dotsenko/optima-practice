@@ -1,0 +1,54 @@
+version: "3.8"
+
+services:
+  db:
+    image: postgres:16.4-alpine
+    container_name: coffee_db
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-coffeeshop}
+    volumes:
+      - pgdata:/var/lib/postgresql/data:Z
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-coffeeshop}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    ports:
+      - "5432:5432"
+
+  backend:
+    build:
+      context: ..
+      dockerfile: deploy/Containerfile.backend
+    container_name: coffee_backend
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-coffeeshop}
+      SECRET_KEY: ${SECRET_KEY:-changeme-production-secret-key-32charsmin}
+      ALGORITHM: ${ALGORITHM:-HS256}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-60}
+      ENVIRONMENT: ${ENVIRONMENT:-production}
+    ports:
+      - "8000:8000"
+
+  frontend:
+    build:
+      context: ..
+      dockerfile: deploy/Containerfile.frontend
+    container_name: coffee_frontend
+    restart: always
+    depends_on:
+      - backend
+    ports:
+      - "3000:8080"
+
+volumes:
+  pgdata:
+    name: coffee_shop_pgdata
