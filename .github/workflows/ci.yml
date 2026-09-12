@@ -26,19 +26,19 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r project/backend/requirements.txt pytest ruff
 
-      - name: Gate 1: Code Linting (ruff)
+      - name: "Gate 1: Code Linting (ruff)"
         run: |
           ruff check project/backend
 
-      - name: Gate 2: Code Formatting (ruff format)
+      - name: "Gate 2: Code Formatting (ruff format)"
         run: |
           ruff format --check project/backend
 
-      - name: Gate 3: Test Suite Execution (pytest)
+      - name: "Gate 3: Test Suite Execution (pytest)"
         run: |
           PYTHONPATH=project/backend pytest project/backend/tests -v
 
-      - name: Gate 4: API Docs Completeness Check
+      - name: "Gate 4: API Docs Completeness Check"
         run: |
           test -f project/docs/api/openapi.yaml
           test -f project/docs/api/README.md
