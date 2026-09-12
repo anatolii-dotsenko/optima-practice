@@ -121,7 +121,7 @@ def seed_initial_data(db: Session) -> None:
             name="Круасан з мигдалевим кремом",
             description="Круасан, наповнений ніжним франжипаном, посипаний пелюстками мигдалю",
             price=Decimal("85.00"),
-            image_url="https://images.unsplash.com/photo-1623334044303-25108675b7e6?w=500&q=80",
+            image_url="https://images.unsplash.com/photo-1608198093002-ad4e005484ec?w=500&q=80",
             is_available=True,
         ),
         # Desserts

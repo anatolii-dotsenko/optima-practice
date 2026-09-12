@@ -1,6 +1,6 @@
 /**
  * Menu Catalog Page Component.
- * Supports category filtering, search, and adding items to the pre-order cart.
+ * Supports category filtering, search, and inline +/- quantity adjustment on cards.
  * Explicit states: loading, success, empty, error.
  */
 import { api } from "../api/client.js";
@@ -8,6 +8,7 @@ import { api } from "../api/client.js";
 let currentCategoryId = null;
 let currentSearchQuery = "";
 let allCategories = [];
+let currentItems = [];
 
 export function renderMenuPage() {
   return `
@@ -45,6 +46,104 @@ export function renderMenuPage() {
   `;
 }
 
+function getCategoryFallback(categoryId) {
+  const cat = allCategories.find((c) => c.id === categoryId);
+  const slug = cat?.slug || "";
+  if (slug === "bakery") return "🥐";
+  if (slug === "desserts") return "🍰";
+  if (slug === "tea") return "🍵";
+  return "☕";
+}
+
+function renderCardAction(item) {
+  if (!item.is_available) {
+    return `<button class="btn btn-primary btn-add-cart" disabled>Недоступно</button>`;
+  }
+
+  const cart = api.getCart();
+  const cartItem = cart.find((i) => i.id === item.id);
+  const qty = cartItem ? cartItem.quantity : 0;
+
+  if (qty > 0) {
+    return `
+      <div class="menu-card-qty-controls" data-card-controls="${item.id}">
+        <button class="btn-qty btn-qty-card" data-card-action="dec" data-id="${item.id}">−</button>
+        <span class="cart-qty-val" id="card-qty-${item.id}">${qty}</span>
+        <button class="btn-qty btn-qty-card" data-card-action="inc" data-id="${item.id}">+</button>
+      </div>
+    `;
+  }
+
+  return `
+    <button class="btn btn-primary btn-add-cart" data-add-id="${item.id}">
+      + У кошик
+    </button>
+  `;
+}
+
+function attachCardActionListeners(container) {
+  // Add to cart button
+  container.querySelectorAll("[data-add-id]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const id = parseInt(btn.getAttribute("data-add-id"), 10);
+      const item = currentItems.find((i) => i.id === id);
+      if (item) {
+        api.addToCart(item);
+        const actionSlot = container.querySelector(`[data-action-slot="${id}"]`);
+        if (actionSlot) {
+          actionSlot.innerHTML = renderCardAction(item);
+          attachCardActionListeners(actionSlot);
+        }
+      }
+    });
+  });
+
+  // Increment button
+  container.querySelectorAll("[data-card-action='inc']").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const id = parseInt(btn.getAttribute("data-id"), 10);
+      const item = currentItems.find((i) => i.id === id);
+      if (item) {
+        api.updateCartQuantity(id, 1);
+        const actionSlot = container.querySelector(`[data-action-slot="${id}"]`);
+        if (actionSlot) {
+          actionSlot.innerHTML = renderCardAction(item);
+          attachCardActionListeners(actionSlot);
+        }
+      }
+    });
+  });
+
+  // Decrement button
+  container.querySelectorAll("[data-card-action='dec']").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const id = parseInt(btn.getAttribute("data-id"), 10);
+      const item = currentItems.find((i) => i.id === id);
+      if (item) {
+        api.updateCartQuantity(id, -1);
+        const actionSlot = container.querySelector(`[data-action-slot="${id}"]`);
+        if (actionSlot) {
+          actionSlot.innerHTML = renderCardAction(item);
+          attachCardActionListeners(actionSlot);
+        }
+      }
+    });
+  });
+}
+
+function syncAllCardActions() {
+  const container = document.getElementById("menu-items-container");
+  if (!container || currentItems.length === 0) return;
+
+  currentItems.forEach((item) => {
+    const actionSlot = container.querySelector(`[data-action-slot="${item.id}"]`);
+    if (actionSlot) {
+      actionSlot.innerHTML = renderCardAction(item);
+      attachCardActionListeners(actionSlot);
+    }
+  });
+}
+
 async function loadAndRenderItems() {
   const container = document.getElementById("menu-items-container");
   if (!container) return;
@@ -61,6 +160,7 @@ async function loadAndRenderItems() {
       categoryId: currentCategoryId || undefined,
       search: currentSearchQuery || undefined,
     });
+    currentItems = items || [];
 
     if (!items || items.length === 0) {
       container.innerHTML = `
@@ -78,54 +178,35 @@ async function loadAndRenderItems() {
     container.innerHTML = `
       <div class="menu-grid">
         ${items
-          .map(
-            (item) => `
-          <div class="menu-card" data-item-id="${item.id}">
-            <div class="menu-card-img">
-              ${
-                item.image_url
-                  ? `<img src="${item.image_url}" alt="${item.name}" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.innerHTML='☕'" />`
-                  : `☕`
-              }
-            </div>
-            <div class="menu-card-body">
-              <div class="menu-card-title">${item.name}</div>
-              <div class="menu-card-desc">${item.description || "Свіжоприготований напій або десерт найвищої якості."}</div>
-              <div class="menu-card-footer">
-                <span class="menu-card-price">${parseFloat(item.price).toFixed(2)} ₴</span>
-                <button
-                  class="btn btn-primary btn-add-cart"
-                  data-add-id="${item.id}"
-                  ${!item.is_available ? "disabled" : ""}
-                >
-                  ${item.is_available ? "+ У кошик" : "Недоступно"}
-                </button>
+          .map((item) => {
+            const fallbackEmoji = getCategoryFallback(item.category_id);
+            return `
+            <div class="menu-card" data-item-id="${item.id}">
+              <div class="menu-card-img">
+                ${
+                  item.image_url
+                    ? `<img src="${item.image_url}" alt="${item.name}" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.innerHTML='${fallbackEmoji}'" />`
+                    : fallbackEmoji
+                }
+              </div>
+              <div class="menu-card-body">
+                <div class="menu-card-title">${item.name}</div>
+                <div class="menu-card-desc">${item.description || "Свіжоприготований напій або десерт найвищої якості."}</div>
+                <div class="menu-card-footer">
+                  <span class="menu-card-price">${parseFloat(item.price).toFixed(2)} ₴</span>
+                  <div data-action-slot="${item.id}">
+                    ${renderCardAction(item)}
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        `
-          )
+          `;
+          })
           .join("")}
       </div>
     `;
 
-    // Attach add-to-cart listeners
-    container.querySelectorAll("[data-add-id]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const id = parseInt(btn.getAttribute("data-add-id"), 10);
-        const item = items.find((i) => i.id === id);
-        if (item) {
-          api.addToCart(item);
-          const origText = btn.textContent;
-          btn.textContent = "Додано! ✓";
-          btn.style.backgroundColor = "var(--color-state-success-text)";
-          setTimeout(() => {
-            btn.textContent = origText;
-            btn.style.backgroundColor = "";
-          }, 800);
-        }
-      });
-    });
+    attachCardActionListeners(container);
   } catch (err) {
     container.innerHTML = `
       <div class="state-alert error">
@@ -183,6 +264,9 @@ export async function initMenuEvents() {
       loadAndRenderItems();
     }, 300);
   });
+
+  // Listen to cart_updated event to keep cards in sync
+  window.addEventListener("cart_updated", syncAllCardActions);
 
   // Initial items load
   await loadAndRenderItems();

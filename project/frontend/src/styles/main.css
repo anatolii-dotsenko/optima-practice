@@ -424,6 +424,23 @@ body {
   width: auto;
 }
 
+.menu-card-qty-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: var(--color-bg-muted);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-full);
+  border: var(--border-subtle);
+}
+
+.btn-qty-card {
+  width: 30px;
+  height: 30px;
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
 /* Cart Page Styles */
 .cart-container {
   display: grid;
