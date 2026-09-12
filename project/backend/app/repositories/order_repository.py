@@ -33,9 +33,30 @@ class OrderRepository:
         stmt = select(Order).where(Order.id == order.id).options(selectinload(Order.items))
         return self.db.execute(stmt).scalar_one()
 
+    def list_all(
+        self,
+        status: Optional[OrderStatus] = None,
+        limit: int = 100,
+        offset: int = 0,
+    ) -> Sequence[Order]:
+        stmt = (
+            select(Order)
+            .options(selectinload(Order.items), selectinload(Order.user))
+            .order_by(Order.created_at.desc())
+            .limit(limit)
+            .offset(offset)
+        )
+        if status is not None:
+            stmt = stmt.where(Order.status == status)
+        return self.db.execute(stmt).scalars().all()
+
     def update_status(self, order: Order, new_status: OrderStatus) -> Order:
         order.status = new_status
         self.db.commit()
         self.db.refresh(order)
-        stmt = select(Order).where(Order.id == order.id).options(selectinload(Order.items))
+        stmt = (
+            select(Order)
+            .where(Order.id == order.id)
+            .options(selectinload(Order.items), selectinload(Order.user))
+        )
         return self.db.execute(stmt).scalar_one()

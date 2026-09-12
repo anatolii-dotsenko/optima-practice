@@ -4,7 +4,12 @@ from app.core.errors import CategoryNotFoundError, MenuItemNotFoundError
 from app.models.category import Category
 from app.models.menu_item import MenuItem
 from app.repositories.menu_repository import CategoryRepository, MenuItemRepository
-from app.schemas.menu import CategoryCreate, MenuItemCreate
+from app.schemas.menu import (
+    CategoryCreate,
+    CategoryUpdate,
+    MenuItemCreate,
+    MenuItemUpdate,
+)
 
 
 class MenuService:
@@ -39,6 +44,15 @@ class MenuService:
         )
         return self.category_repo.create(category)
 
+    def update_category(self, category_id: int, data: CategoryUpdate) -> Category:
+        category = self.get_category_by_id(category_id)
+        update_dict = data.model_dump(exclude_unset=True)
+        return self.category_repo.update(category, update_dict)
+
+    def delete_category(self, category_id: int) -> None:
+        category = self.get_category_by_id(category_id)
+        self.category_repo.delete(category)
+
     def list_menu_items(
         self,
         category_id: Optional[int] = None,
@@ -72,3 +86,18 @@ class MenuService:
             is_available=data.is_available,
         )
         return self.menu_item_repo.create(item)
+
+    def update_menu_item(self, item_id: int, data: MenuItemUpdate) -> MenuItem:
+        item = self.get_menu_item_by_id(item_id)
+        update_dict = data.model_dump(exclude_unset=True)
+        if "category_id" in update_dict and update_dict["category_id"] is not None:
+            self.get_category_by_id(update_dict["category_id"])
+        return self.menu_item_repo.update(item, update_dict)
+
+    def delete_menu_item(self, item_id: int) -> None:
+        item = self.get_menu_item_by_id(item_id)
+        self.menu_item_repo.delete(item)
+
+    def toggle_item_availability(self, item_id: int, is_available: bool) -> MenuItem:
+        item = self.get_menu_item_by_id(item_id)
+        return self.menu_item_repo.update(item, {"is_available": is_available})

@@ -1,9 +1,10 @@
-from typing import List
+from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 
-from app.api.deps import get_current_user, get_order_service
+from app.api.deps import get_current_admin_user, get_current_user, get_order_service
 from app.core.errors import DomainException
+from app.models.order import OrderStatus
 from app.schemas.order import (
     OrderCreateRequest,
     OrderResponse,
@@ -52,6 +53,30 @@ def get_my_orders(
     return order_service.list_orders_by_user(user_id=current_user.id)
 
 
+@router.get(
+    "/admin",
+    response_model=List[OrderResponse],
+    summary="List all orders (admin/barista only)",
+)
+def get_all_orders_admin(
+    status: Optional[OrderStatus] = Query(None, description="Filter orders by status"),
+    limit: int = Query(100, ge=1, le=200),
+    offset: int = Query(0, ge=0),
+    _current_admin: UserResponse = Depends(get_current_admin_user),
+    order_service: OrderService = Depends(get_order_service),
+):
+    """Retrieve all customer orders across the system for staff/barista queue management."""
+    orders = order_service.list_all_orders(status=status, limit=limit, offset=offset)
+    result = []
+    for ord in orders:
+        resp = OrderResponse.model_validate(ord)
+        if ord.user:
+            resp.customer_email = ord.user.email
+            resp.customer_name = ord.user.full_name
+        result.append(resp)
+    return result
+
+
 @router.get("/{order_id}", response_model=OrderResponse, summary="Get order by ID")
 def get_order(
     order_id: int,
@@ -77,7 +102,12 @@ def update_order_status(
 ):
     """Transition order status according to state machine rules (ADR-0006)."""
     try:
-        return order_service.update_order_status(order_id=order_id, new_status=payload.status)
+        order = order_service.update_order_status(order_id=order_id, new_status=payload.status)
+        resp = OrderResponse.model_validate(order)
+        if order.user:
+            resp.customer_email = order.user.email
+            resp.customer_name = order.user.full_name
+        return resp
     except DomainException as e:
         raise HTTPException(
             status_code=e.status_code,

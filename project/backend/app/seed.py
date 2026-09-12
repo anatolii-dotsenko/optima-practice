@@ -4,7 +4,7 @@ from decimal import Decimal
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.core.security import get_password_hash
+from app.core.security import hash_password
 from app.models.category import Category
 from app.models.menu_item import MenuItem
 from app.models.user import User
@@ -150,7 +150,7 @@ def seed_initial_data(db: Session) -> None:
     if not existing_admin:
         admin_user = User(
             email=admin_email,
-            hashed_password=get_password_hash("OptimaAdmin2026!"),
+            hashed_password=hash_password("OptimaAdmin2026!"),
             full_name="Адміністратор Optima",
             is_active=True,
             is_superuser=True,
