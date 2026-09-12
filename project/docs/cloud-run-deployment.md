@@ -50,6 +50,16 @@ gcloud services enable \
     artifactregistry.googleapis.com \
     secretmanager.googleapis.com \
     sqladmin.googleapis.com
+
+# 4. Надати сервісному акаунту Cloud Build права на Storage, Logging та Artifact Registry
+PROJECT_NUMBER=$(gcloud projects describe $PROJECT_ID --format='value(projectNumber)')
+COMPUTE_SA="${PROJECT_NUMBER}-compute@developer.gserviceaccount.com"
+
+for ROLE in "roles/storage.admin" "roles/logging.logWriter" "roles/artifactregistry.writer"; do
+    gcloud projects add-iam-policy-binding $PROJECT_ID \
+        --member="serviceAccount:${COMPUTE_SA}" \
+        --role="${ROLE}"
+done
 ```
 
 ---

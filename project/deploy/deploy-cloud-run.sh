@@ -58,12 +58,28 @@ REPO_NAME="optima-repo"
 BACKEND_IMG="${GCP_REGION}-docker.pkg.dev/${GCP_PROJECT}/${REPO_NAME}/coffee-backend:latest"
 FRONTEND_IMG="${GCP_REGION}-docker.pkg.dev/${GCP_PROJECT}/${REPO_NAME}/coffee-frontend:latest"
 
-echo -e "\n${BLUE}[1/6] Enabling required Google Cloud APIs...${NC}"
+echo -e "\n${BLUE}[1/6] Enabling required Google Cloud APIs and configuring IAM...${NC}"
 gcloud services enable \
     run.googleapis.com \
     cloudbuild.googleapis.com \
     artifactregistry.googleapis.com \
     --project="${GCP_PROJECT}"
+
+# Grant required permissions to Cloud Build and Compute service accounts
+PROJECT_NUMBER=$(gcloud projects describe "${GCP_PROJECT}" --format='value(projectNumber)')
+COMPUTE_SA="${PROJECT_NUMBER}-compute@developer.gserviceaccount.com"
+CLOUDBUILD_SA="${PROJECT_NUMBER}@cloudbuild.gserviceaccount.com"
+
+echo "Configuring permissions for service account ${COMPUTE_SA}..."
+for ROLE in "roles/storage.admin" "roles/logging.logWriter" "roles/artifactregistry.writer"; do
+    gcloud projects add-iam-policy-binding "${GCP_PROJECT}" \
+        --member="serviceAccount:${COMPUTE_SA}" \
+        --role="${ROLE}" >/dev/null 2>&1 || true
+    gcloud projects add-iam-policy-binding "${GCP_PROJECT}" \
+        --member="serviceAccount:${CLOUDBUILD_SA}" \
+        --role="${ROLE}" >/dev/null 2>&1 || true
+done
+echo -e "${GREEN}✓ IAM permissions configured.${NC}"
 
 echo -e "\n${BLUE}[2/6] Ensuring Artifact Registry repository exists...${NC}"
 gcloud artifacts repositories create "${REPO_NAME}" \
