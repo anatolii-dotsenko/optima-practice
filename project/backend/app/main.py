@@ -109,13 +109,24 @@ async def http_exception_handler(request: Request, exc: HTTPException) -> JSONRe
 @app.exception_handler(Exception)
 async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONResponse:
     """Fallback handler for unexpected server errors."""
+    import logging
+
+    logging.getLogger("app").error(
+        "Unhandled exception on %s %s: %s", request.method, request.url.path, exc, exc_info=True
+    )
+    headers = {}
+    origin = request.headers.get("origin")
+    if origin and (origin in settings.BACKEND_CORS_ORIGINS or "*" in settings.BACKEND_CORS_ORIGINS):
+        headers["Access-Control-Allow-Origin"] = origin
+        headers["Access-Control-Allow-Credentials"] = "true"
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content={
             "code": "internal_error",
             "message": "An unexpected internal error occurred",
-            "details": None,
+            "details": str(exc) if settings.ENVIRONMENT != "production" else None,
         },
+        headers=headers,
     )
 
 
