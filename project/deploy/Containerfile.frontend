@@ -1,0 +1,12 @@
+# Production static runtime using pinned non-root nginx image
+FROM nginxinc/nginx-unprivileged:1.27.2-alpine-slim
+
+# Copy static frontend assets into nginx default html root
+COPY --chown=101:101 frontend /usr/share/nginx/html
+
+EXPOSE 8080
+
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD wget -q --spider http://localhost:8080/index.html || exit 1
+
+CMD ["nginx", "-g", "daemon off;"]
