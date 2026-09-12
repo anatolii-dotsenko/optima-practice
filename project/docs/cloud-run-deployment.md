@@ -204,7 +204,7 @@ gcloud artifacts repositories create optima-repo \
 ```bash
 gcloud run services update optima-coffee-backend \
     --region=$REGION \
-    --update-env-vars="BACKEND_CORS_ORIGINS=${FRONTEND_URL},http://localhost:3000"
+    --update-env-vars="BACKEND_CORS_ORIGINS=${FRONTEND_URL}"
 ```
 
 ---

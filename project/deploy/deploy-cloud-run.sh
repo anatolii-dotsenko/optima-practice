@@ -144,7 +144,7 @@ FRONTEND_URL="$(gcloud run services describe optima-coffee-frontend --region="${
 echo "Locking down Backend CORS to Frontend URL..."
 gcloud run services update optima-coffee-backend \
     --region="${GCP_REGION}" \
-    --update-env-vars="BACKEND_CORS_ORIGINS=${FRONTEND_URL},http://localhost:3000" \
+    --update-env-vars="BACKEND_CORS_ORIGINS=${FRONTEND_URL}" \
     --project="${GCP_PROJECT}"
 
 echo -e "\n${GREEN}=================================================================${NC}"
