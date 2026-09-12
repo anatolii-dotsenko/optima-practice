@@ -73,3 +73,18 @@ def test_order_state_machine_legal_and_illegal_transitions(
     # COMPLETED -> CANCELLED (illegal from terminal)
     with pytest.raises(InvalidOrderStateError):
         service.update_order_status(order.id, OrderStatus.CANCELLED)
+
+
+def test_list_all_orders_admin_service(db_session: Session, sample_user, sample_menu_item):
+    service = OrderService(OrderRepository(db_session), MenuItemRepository(db_session))
+    req = OrderCreateRequest(items=[OrderItemCreate(menu_item_id=sample_menu_item.id, quantity=2)])
+    service.create_order(user_id=sample_user.id, request=req)
+
+    all_orders = service.list_all_orders()
+    assert len(all_orders) >= 1
+
+    pending_orders = service.list_all_orders(status=OrderStatus.PENDING)
+    assert len(pending_orders) >= 1
+
+    completed_orders = service.list_all_orders(status=OrderStatus.COMPLETED)
+    assert len(completed_orders) == 0

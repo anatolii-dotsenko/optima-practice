@@ -92,6 +92,31 @@ def auth_headers(sample_user: User) -> dict:
 
 
 @pytest.fixture(scope="function")
+def admin_user(db_session: Session) -> User:
+    """Pre-populate an admin test user in the database."""
+    user = User(
+        email="admin_test@example.com",
+        hashed_password=hash_password("AdminPass123!"),
+        full_name="Admin Test User",
+        is_active=True,
+        is_superuser=True,
+    )
+    db_session.add(user)
+    db_session.commit()
+    db_session.refresh(user)
+    return user
+
+
+@pytest.fixture(scope="function")
+def admin_headers(admin_user: User) -> dict:
+    """Generate valid Bearer Authorization headers for admin_user."""
+    from app.core.security import create_access_token
+
+    token = create_access_token(subject=str(admin_user.id))
+    return {"Authorization": f"Bearer {token}"}
+
+
+@pytest.fixture(scope="function")
 def sample_category(db_session: Session):
     """Pre-populate a test category."""
     from app.models.category import Category

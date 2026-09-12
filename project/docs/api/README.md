@@ -41,9 +41,17 @@ Authorization: Bearer <your_access_token>
 | `POST` | `/api/v1/auth/login` | Authenticate & obtain JWT | None | [login.md](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/docs/api/endpoints/login.md) |
 | `GET` | `/api/v1/auth/me` | Fetch authenticated profile | Bearer | [me.md](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/docs/api/endpoints/me.md) |
 | `GET` | `/api/v1/menu/categories` | List active categories | None | [get-categories.md](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/docs/api/endpoints/get-categories.md) |
+| `POST` | `/api/v1/menu/categories` | Create category | Admin | [create-category.md](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/docs/api/endpoints/create-category.md) |
+| `PUT` | `/api/v1/menu/categories/{id}` | Update category | Admin | [update-category.md](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/docs/api/endpoints/update-category.md) |
+| `DELETE` | `/api/v1/menu/categories/{id}` | Delete category | Admin | [delete-category.md](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/docs/api/endpoints/delete-category.md) |
 | `GET` | `/api/v1/menu/items` | List & search menu items | None | [get-menu.md](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/docs/api/endpoints/get-menu.md) |
+| `POST` | `/api/v1/menu/items` | Create menu item | Admin | [create-menu-item.md](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/docs/api/endpoints/create-menu-item.md) |
+| `PUT` | `/api/v1/menu/items/{id}` | Update menu item | Admin | [update-menu-item.md](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/docs/api/endpoints/update-menu-item.md) |
+| `PATCH` | `/api/v1/menu/items/{id}/availability` | Toggle item in stop-list | Admin | [toggle-availability.md](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/docs/api/endpoints/toggle-availability.md) |
+| `DELETE` | `/api/v1/menu/items/{id}` | Delete menu item | Admin | [delete-menu-item.md](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/docs/api/endpoints/delete-menu-item.md) |
 | `POST` | `/api/v1/orders` | Create coffee pre-order | Bearer | [create-order.md](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/docs/api/endpoints/create-order.md) |
 | `GET` | `/api/v1/orders` | Get current user's order history | Bearer | [get-orders.md](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/docs/api/endpoints/get-orders.md) |
+| `GET` | `/api/v1/orders/admin` | List all orders across users | Admin | [get-admin-orders.md](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/docs/api/endpoints/get-admin-orders.md) |
 | `PATCH` | `/api/v1/orders/{id}/status` | Transition order status | Bearer | [update-order-status.md](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/docs/api/endpoints/update-order-status.md) |
 | `GET` | `/health` | Liveness health check | None | Direct probe |
 

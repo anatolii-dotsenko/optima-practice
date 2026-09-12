@@ -127,6 +127,7 @@ podman ps
   - [ADR-0005: JWT Auth and Password Hashing](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/docs/adr/0005-jwt-auth-and-password-hashing.md)
   - [ADR-0006: Order State Machine and Lifecycle](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/docs/adr/0006-order-state-machine-and-lifecycle.md)
   - [ADR-0007: Server-Side Price Calculation and Cart Validation](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/docs/adr/0007-server-side-price-calculation-and-cart-validation.md)
+  - [ADR-0008: Role-Based Access Control and Administrative Boundaries](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/docs/adr/0008-role-based-access-control-and-administrative-boundaries.md)
 - **API Reference:** [docs/api/README.md](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/docs/api/README.md)
   - [OpenAPI Specification (openapi.yaml)](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/docs/api/openapi.yaml)
   - [POST /api/v1/auth/register](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/docs/api/endpoints/register.md)
@@ -134,6 +135,10 @@ podman ps
   - [GET /api/v1/auth/me](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/docs/api/endpoints/me.md)
   - [GET /api/v1/menu/categories](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/docs/api/endpoints/get-categories.md)
   - [GET /api/v1/menu/items](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/docs/api/endpoints/get-menu.md)
+  - [PUT /api/v1/menu/items/{id}](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/docs/api/endpoints/update-menu-item.md)
+  - [DELETE /api/v1/menu/items/{id}](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/docs/api/endpoints/delete-menu-item.md)
   - [POST /api/v1/orders](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/docs/api/endpoints/create-order.md)
   - [GET /api/v1/orders](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/docs/api/endpoints/get-orders.md)
+  - [GET /api/v1/orders/admin](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/docs/api/endpoints/get-admin-orders.md)
   - [PATCH /api/v1/orders/{id}/status](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/docs/api/endpoints/update-order-status.md)
+

@@ -90,3 +90,24 @@ def test_update_order_status_lifecycle(client, auth_headers, sample_menu_item):
     )
     assert illegal_resp.status_code == 400
     assert illegal_resp.json()["code"] == "invalid_state_transition"
+
+
+def test_admin_orders_queue(client, auth_headers, admin_headers, sample_menu_item):
+    # Place an order as customer
+    create_payload = {
+        "items": [{"menu_item_id": sample_menu_item.id, "quantity": 1}],
+        "notes": "Швидше, будь ласка",
+    }
+    client.post("/api/v1/orders", json=create_payload, headers=auth_headers)
+
+    # Regular customer cannot access admin queue (HTTP 403)
+    forbidden = client.get("/api/v1/orders/admin", headers=auth_headers)
+    assert forbidden.status_code == 403
+
+    # Admin accesses queue (HTTP 200)
+    admin_resp = client.get("/api/v1/orders/admin", headers=admin_headers)
+    assert admin_resp.status_code == 200
+    orders = admin_resp.json()
+    assert len(orders) >= 1
+    assert orders[0]["customer_email"] == "existing@example.com"
+    assert orders[0]["customer_name"] == "Existing User"

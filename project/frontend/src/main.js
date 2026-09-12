@@ -3,6 +3,7 @@
  */
 import { api } from "./api/client.js";
 import { renderNavbar } from "./components/navbar.js";
+import { initAdminEvents, renderAdminPage } from "./pages/admin.js";
 import { initCartEvents, renderCartPage } from "./pages/cart.js";
 import { initLoginEvents, renderLoginPage } from "./pages/login.js";
 import { initMenuEvents, renderMenuPage } from "./pages/menu.js";
@@ -15,6 +16,7 @@ const routes = {
   login: { render: renderLoginPage, init: initLoginEvents },
   register: { render: renderRegisterPage, init: initRegisterEvents },
   profile: { render: renderProfilePage, init: initProfileEvents },
+  admin: { render: renderAdminPage, init: initAdminEvents },
 };
 
 function getRouteFromHash() {
@@ -56,6 +58,16 @@ function renderApp() {
   routes[activeRoute].init(navigate);
 }
 
-window.addEventListener("hashchange", renderApp);
-window.addEventListener("DOMContentLoaded", renderApp);
+// Global cart event sync
 window.addEventListener("cart_updated", updateCartBadge);
+window.addEventListener("hashchange", renderApp);
+window.addEventListener("DOMContentLoaded", async () => {
+  if (api.isAuthenticated() && !api.getUser()) {
+    try {
+      await api.getMe();
+    } catch {
+      api.clearToken();
+    }
+  }
+  renderApp();
+});

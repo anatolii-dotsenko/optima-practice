@@ -47,3 +47,50 @@ def test_create_menu_item_invalid_category_raises_error(db_session: Session):
                 price=Decimal("50.00"),
             )
         )
+
+
+def test_update_menu_item_success(db_session: Session, sample_menu_item):
+    from app.schemas.menu import MenuItemUpdate
+
+    service = MenuService(CategoryRepository(db_session), MenuItemRepository(db_session))
+    updated = service.update_menu_item(
+        sample_menu_item.id,
+        MenuItemUpdate(price=Decimal("99.50"), description="Оновлений опис"),
+    )
+    assert updated.price == Decimal("99.50")
+    assert updated.description == "Оновлений опис"
+
+
+def test_toggle_item_availability_success(db_session: Session, sample_menu_item):
+    service = MenuService(CategoryRepository(db_session), MenuItemRepository(db_session))
+    toggled = service.toggle_item_availability(sample_menu_item.id, False)
+    assert toggled.is_available is False
+
+    restored = service.toggle_item_availability(sample_menu_item.id, True)
+    assert restored.is_available is True
+
+
+def test_delete_menu_item_success(db_session: Session, sample_menu_item):
+    service = MenuService(CategoryRepository(db_session), MenuItemRepository(db_session))
+    service.delete_menu_item(sample_menu_item.id)
+
+    with pytest.raises(MenuItemNotFoundError):
+        service.get_menu_item_by_id(sample_menu_item.id)
+
+
+def test_category_crud_service(db_session: Session):
+    from app.schemas.menu import CategoryCreate, CategoryUpdate
+
+    service = MenuService(CategoryRepository(db_session), MenuItemRepository(db_session))
+    cat = service.create_category(
+        CategoryCreate(name="Смузі", slug="smoothie", description="Фруктові смузі")
+    )
+    assert cat.id is not None
+    assert cat.slug == "smoothie"
+
+    updated = service.update_category(cat.id, CategoryUpdate(name="Свіжі смузі"))
+    assert updated.name == "Свіжі смузі"
+
+    service.delete_category(cat.id)
+    with pytest.raises(CategoryNotFoundError):
+        service.get_category_by_id(cat.id)

@@ -35,6 +35,18 @@ class CategoryRepository:
         self.db.refresh(category)
         return category
 
+    def update(self, category: Category, update_data: dict) -> Category:
+        for key, value in update_data.items():
+            if hasattr(category, key) and value is not None:
+                setattr(category, key, value)
+        self.db.commit()
+        self.db.refresh(category)
+        return category
+
+    def delete(self, category: Category) -> None:
+        self.db.delete(category)
+        self.db.commit()
+
 
 class MenuItemRepository:
     """Handles persistence operations for MenuItem entities."""
@@ -84,3 +96,15 @@ class MenuItemRepository:
         self.db.commit()
         self.db.refresh(item)
         return item
+
+    def update(self, item: MenuItem, update_data: dict) -> MenuItem:
+        for key, value in update_data.items():
+            if hasattr(item, key) and value is not None:
+                setattr(item, key, value)
+        self.db.commit()
+        self.db.refresh(item)
+        return item
+
+    def delete(self, item: MenuItem) -> None:
+        self.db.delete(item)
+        self.db.commit()

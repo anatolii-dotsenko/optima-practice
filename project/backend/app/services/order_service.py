@@ -1,5 +1,5 @@
 from decimal import Decimal
-from typing import Dict, List, Sequence, Set
+from typing import Dict, List, Optional, Sequence, Set
 
 from app.core.errors import (
     InvalidOrderStateError,
@@ -104,3 +104,12 @@ class OrderService:
             )
 
         return self.order_repo.update_status(order, new_status)
+
+    def list_all_orders(
+        self,
+        status: Optional[OrderStatus] = None,
+        limit: int = 100,
+        offset: int = 0,
+    ) -> Sequence[Order]:
+        """List all customer orders across the system (staff / barista view)."""
+        return self.order_repo.list_all(status=status, limit=limit, offset=offset)

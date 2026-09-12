@@ -22,6 +22,18 @@ class CategoryResponse(CategoryBase):
     model_config = ConfigDict(from_attributes=True)
 
 
+class CategoryUpdate(BaseModel):
+    name: Optional[str] = Field(None, min_length=2, max_length=100)
+    slug: Optional[str] = Field(None, min_length=2, max_length=100)
+    description: Optional[str] = None
+    display_order: Optional[int] = None
+    is_active: Optional[bool] = None
+
+
+class ItemAvailabilityUpdate(BaseModel):
+    is_available: bool = Field(..., description="Availability status in stop-list")
+
+
 class MenuItemBase(BaseModel):
     name: str = Field(..., min_length=2, max_length=150)
     description: Optional[str] = None

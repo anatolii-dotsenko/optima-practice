@@ -35,6 +35,8 @@ class OrderResponse(BaseModel):
     notes: Optional[str] = None
     items: List[OrderItemResponse]
     created_at: datetime
+    customer_email: Optional[str] = None
+    customer_name: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
 

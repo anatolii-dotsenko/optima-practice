@@ -20,6 +20,11 @@ export function renderNavbar(activeRoute = "menu") {
         ${
           isAuth
             ? `
+          ${
+            api.isAdmin()
+              ? `<a href="#/admin" class="nav-link ${activeRoute === "admin" ? "active" : ""}">⚙️ Адмін-панель</a>`
+              : ""
+          }
           <a href="#/profile" class="nav-link ${activeRoute === "profile" ? "active" : ""}">Мій Профіль</a>
           <button id="nav-logout-btn" class="nav-link" style="background:none;border:none;cursor:pointer;">Вийти</button>
         `

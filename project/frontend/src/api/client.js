@@ -10,6 +10,7 @@ class ApiClient {
   constructor() {
     this.baseUrl = this._resolveBaseUrl();
     this.tokenKey = "coffee_shop_access_token";
+    this.userKey = "coffee_shop_user";
     this.cartKey = "coffee_shop_cart";
   }
 
@@ -44,11 +45,37 @@ class ApiClient {
   clearToken() {
     if (typeof localStorage !== "undefined") {
       localStorage.removeItem(this.tokenKey);
+      localStorage.removeItem(this.userKey);
     }
   }
 
   isAuthenticated() {
     return Boolean(this.getToken());
+  }
+
+  getUser() {
+    if (typeof localStorage === "undefined") return null;
+    try {
+      const data = localStorage.getItem(this.userKey);
+      return data ? JSON.parse(data) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  setUser(user) {
+    if (typeof localStorage !== "undefined") {
+      if (user) {
+        localStorage.setItem(this.userKey, JSON.stringify(user));
+      } else {
+        localStorage.removeItem(this.userKey);
+      }
+    }
+  }
+
+  isAdmin() {
+    const user = this.getUser();
+    return Boolean(user && user.is_superuser);
   }
 
   // --- Cart Management ---
@@ -180,14 +207,20 @@ class ApiClient {
     });
     if (data?.access_token) {
       this.setToken(data.access_token);
+      try {
+        const user = await this.getMe();
+        this.setUser(user);
+      } catch {}
     }
     return data;
   }
 
   async getMe() {
-    return this._request("/auth/me", {
+    const user = await this._request("/auth/me", {
       method: "GET",
     });
+    this.setUser(user);
+    return user;
   }
 
   // --- Menu Endpoints ---
@@ -198,10 +231,11 @@ class ApiClient {
     });
   }
 
-  async getMenuItems({ categoryId, search } = {}) {
+  async getMenuItems({ categoryId, search, availableOnly = true } = {}) {
     const params = new URLSearchParams();
     if (categoryId) params.append("category_id", categoryId);
     if (search) params.append("search", search);
+    if (availableOnly !== undefined) params.append("available_only", availableOnly);
 
     const queryStr = params.toString() ? `?${params.toString()}` : "";
     return this._request(`/menu/items${queryStr}`, {
@@ -212,6 +246,40 @@ class ApiClient {
   async getMenuItem(itemId) {
     return this._request(`/menu/items/${itemId}`, {
       method: "GET",
+    });
+  }
+
+  async createMenuItem(payload) {
+    return this._request("/menu/items", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async updateMenuItem(itemId, payload) {
+    return this._request(`/menu/items/${itemId}`, {
+      method: "PUT",
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async toggleItemAvailability(itemId, isAvailable) {
+    return this._request(`/menu/items/${itemId}/availability`, {
+      method: "PATCH",
+      body: JSON.stringify({ is_available: isAvailable }),
+    });
+  }
+
+  async deleteMenuItem(itemId) {
+    return this._request(`/menu/items/${itemId}`, {
+      method: "DELETE",
+    });
+  }
+
+  async createCategory(payload) {
+    return this._request("/menu/categories", {
+      method: "POST",
+      body: JSON.stringify(payload),
     });
   }
 
@@ -227,6 +295,20 @@ class ApiClient {
   async getMyOrders() {
     return this._request("/orders", {
       method: "GET",
+    });
+  }
+
+  async getAdminOrders(status = null) {
+    const query = status ? `?status=${encodeURIComponent(status)}` : "";
+    return this._request(`/orders/admin${query}`, {
+      method: "GET",
+    });
+  }
+
+  async updateOrderStatus(orderId, status) {
+    return this._request(`/orders/${orderId}/status`, {
+      method: "PATCH",
+      body: JSON.stringify({ status }),
     });
   }
 

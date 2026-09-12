@@ -67,6 +67,22 @@ def get_current_user(
         )
 
 
+def get_current_admin_user(
+    current_user: UserResponse = Depends(get_current_user),
+) -> UserResponse:
+    """Verify that the current user possesses superuser/admin privileges."""
+    if not current_user.is_superuser:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={
+                "code": "forbidden",
+                "message": "Admin privileges required for this operation",
+                "details": None,
+            },
+        )
+    return current_user
+
+
 def get_menu_service(db: Session = Depends(get_db)) -> MenuService:
     """Dependency provider for MenuService."""
     category_repo = CategoryRepository(db)

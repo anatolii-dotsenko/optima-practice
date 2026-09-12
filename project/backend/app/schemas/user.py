@@ -19,6 +19,7 @@ class UserResponse(UserBase):
 
     id: int = Field(..., description="Unique user identifier", example=1)
     is_active: bool = Field(..., description="Account active status", example=True)
+    is_superuser: bool = Field(False, description="Admin privileges", example=False)
     created_at: datetime = Field(..., description="Timestamp when account was created")
 
     model_config = ConfigDict(from_attributes=True)

@@ -113,12 +113,98 @@ paths:
                   $ref: '#/components/schemas/CategoryResponse'
                 type: array
                 title: Response Get Categories Api V1 Menu Categories Get
+    post:
+      tags:
+      - Menu & Catalog
+      summary: Create menu category (admin only)
+      description: Create a new menu category (requires admin privileges).
+      operationId: create_category_api_v1_menu_categories_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryCreate'
+        required: true
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - HTTPBearer: []
+  /api/v1/menu/categories/{category_id}:
+    put:
+      tags:
+      - Menu & Catalog
+      summary: Update menu category (admin only)
+      description: Update an existing category (requires admin privileges).
+      operationId: update_category_api_v1_menu_categories__category_id__put
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: category_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Category Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Menu & Catalog
+      summary: Delete menu category (admin only)
+      description: Delete a category (requires admin privileges).
+      operationId: delete_category_api_v1_menu_categories__category_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: category_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Category Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
   /api/v1/menu/items:
     get:
       tags:
       - Menu & Catalog
       summary: List menu items
-      description: Retrieve all available menu items with optional category filtering
+      description: Retrieve menu items with optional category filtering, availability,
         and search.
       operationId: get_menu_items_api_v1_menu_items_get
       parameters:
@@ -142,6 +228,15 @@ paths:
           description: Search by name or description
           title: Search
         description: Search by name or description
+      - name: available_only
+        in: query
+        required: false
+        schema:
+          type: boolean
+          description: Filter only available items for public menu
+          default: true
+          title: Available Only
+        description: Filter only available items for public menu
       responses:
         '200':
           description: Successful Response
@@ -161,8 +256,8 @@ paths:
     post:
       tags:
       - Menu & Catalog
-      summary: Create menu item
-      description: Create a new menu item (requires authentication).
+      summary: Create menu item (admin only)
+      description: Create a new menu item (requires admin privileges).
       operationId: create_menu_item_api_v1_menu_items_post
       security:
       - HTTPBearer: []
@@ -199,6 +294,100 @@ paths:
         schema:
           type: integer
           title: Item Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MenuItemResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    put:
+      tags:
+      - Menu & Catalog
+      summary: Update menu item (admin only)
+      description: Update an existing menu item (requires admin privileges).
+      operationId: update_menu_item_api_v1_menu_items__item_id__put
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: item_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Item Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MenuItemUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MenuItemResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - Menu & Catalog
+      summary: Delete menu item (admin only)
+      description: Delete a menu item from the catalog (requires admin privileges).
+      operationId: delete_menu_item_api_v1_menu_items__item_id__delete
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: item_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Item Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/menu/items/{item_id}/availability:
+    patch:
+      tags:
+      - Menu & Catalog
+      summary: Toggle menu item availability in stop-list (admin only)
+      description: Instantly toggle menu item availability in stop-list (requires
+        admin privileges).
+      operationId: toggle_item_availability_api_v1_menu_items__item_id__availability_patch
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: item_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Item Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ItemAvailabilityUpdate'
       responses:
         '200':
           description: Successful Response
@@ -259,6 +448,60 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
       security:
       - HTTPBearer: []
+  /api/v1/orders/admin:
+    get:
+      tags:
+      - Orders & Pre-orders
+      summary: List all orders (admin/barista only)
+      description: Retrieve all customer orders across the system for staff/barista
+        queue management.
+      operationId: get_all_orders_admin_api_v1_orders_admin_get
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: status
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - $ref: '#/components/schemas/OrderStatus'
+          - type: 'null'
+          description: Filter orders by status
+          title: Status
+        description: Filter orders by status
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 200
+          minimum: 1
+          default: 100
+          title: Limit
+      - name: offset
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+          title: Offset
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OrderResponse'
+                title: Response Get All Orders Admin Api V1 Orders Admin Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
   /api/v1/orders/{order_id}:
     get:
       tags:
@@ -341,6 +584,32 @@ paths:
                 title: Response Health Check Health Get
 components:
   schemas:
+    CategoryCreate:
+      properties:
+        name:
+          type: string
+          maxLength: 100
+          minLength: 2
+          title: Name
+        slug:
+          type: string
+          maxLength: 100
+          minLength: 2
+          title: Slug
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+        display_order:
+          type: integer
+          title: Display Order
+          default: 0
+      type: object
+      required:
+      - name
+      - slug
+      title: CategoryCreate
     CategoryResponse:
       properties:
         name:
@@ -375,6 +644,39 @@ components:
       - id
       - is_active
       title: CategoryResponse
+    CategoryUpdate:
+      properties:
+        name:
+          anyOf:
+          - type: string
+            maxLength: 100
+            minLength: 2
+          - type: 'null'
+          title: Name
+        slug:
+          anyOf:
+          - type: string
+            maxLength: 100
+            minLength: 2
+          - type: 'null'
+          title: Slug
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+        display_order:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Display Order
+        is_active:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Is Active
+      type: object
+      title: CategoryUpdate
     ErrorResponse:
       properties:
         code:
@@ -409,6 +711,16 @@ components:
           title: Detail
       type: object
       title: HTTPValidationError
+    ItemAvailabilityUpdate:
+      properties:
+        is_available:
+          type: boolean
+          title: Is Available
+          description: Availability status in stop-list
+      type: object
+      required:
+      - is_available
+      title: ItemAvailabilityUpdate
     LoginRequest:
       properties:
         email:
@@ -503,6 +815,45 @@ components:
       - id
       - category_id
       title: MenuItemResponse
+    MenuItemUpdate:
+      properties:
+        name:
+          anyOf:
+          - type: string
+            maxLength: 150
+            minLength: 2
+          - type: 'null'
+          title: Name
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+        price:
+          anyOf:
+          - type: number
+            exclusiveMinimum: 0.0
+          - type: string
+            pattern: ^(?!^[-+.]*$)[+-]?0*(?:\d{0,8}|(?=[\d.]{1,11}0*$)\d{0,8}\.\d{0,2}0*$)
+          - type: 'null'
+          title: Price
+        image_url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Image Url
+        is_available:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Is Available
+        category_id:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Category Id
+      type: object
+      title: MenuItemUpdate
     OrderCreateRequest:
       properties:
         items:
@@ -593,6 +944,16 @@ components:
           type: string
           format: date-time
           title: Created At
+        customer_email:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Customer Email
+        customer_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Customer Name
       type: object
       required:
       - id
@@ -697,6 +1058,12 @@ components:
           title: Is Active
           description: Account active status
           example: true
+        is_superuser:
+          type: boolean
+          title: Is Superuser
+          description: Admin privileges
+          default: false
+          example: false
         created_at:
           type: string
           format: date-time
