@@ -79,11 +79,13 @@ done
 #### Варіант Б: Google Cloud SQL (Повністю в екосистемі Google Cloud)
 ```bash
 # 1. Створити екземпляр Cloud SQL PostgreSQL 16
+export DB_PASSWORD=$(openssl rand -hex 16)
 gcloud sql instances create optima-postgres \
     --database-version=POSTGRES_16 \
+    --edition=ENTERPRISE \
     --tier=db-f1-micro \
     --region=$REGION \
-    --root-password="SuperSecurePassword123!"
+    --root-password="$DB_PASSWORD"
 
 # 2. Створити базу даних coffeeshop
 gcloud sql databases create coffeeshop --instance=optima-postgres
@@ -92,7 +94,7 @@ gcloud sql databases create coffeeshop --instance=optima-postgres
 export INSTANCE_CONNECTION_NAME=$(gcloud sql instances describe optima-postgres --format='value(connectionName)')
 
 # 4. Рядок підключення для Cloud Run через Unix Domain Socket:
-export DATABASE_URL="postgresql://postgres:SuperSecurePassword123!@/coffeeshop?host=/cloudsql/${INSTANCE_CONNECTION_NAME}"
+export DATABASE_URL="postgresql://postgres:${DB_PASSWORD}@/coffeeshop?host=/cloudsql/${INSTANCE_CONNECTION_NAME}"
 ```
 
 ---

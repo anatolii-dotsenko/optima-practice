@@ -18,6 +18,10 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
 
+    # Initial Superuser Provisioning (Optional, via environment)
+    FIRST_SUPERUSER_EMAIL: str = ""
+    FIRST_SUPERUSER_PASSWORD: str = ""
+
     # Database
     DATABASE_URL: str = "postgresql://postgres:postgres@localhost:5432/coffeeshop"
 

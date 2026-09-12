@@ -116,6 +116,31 @@ podman-compose -f deploy/podman-compose.yml up -d
 podman ps
 ```
 
+### 4. Production Cloud Deployment (Google Cloud Run)
+
+The application is engineered for turnkey deployment to **Google Cloud Platform (GCP)** using Serverless OCI containers and managed PostgreSQL:
+
+- **Frontend Service:** Cloud Run (`optima-coffee-frontend`), serving static SPA through an unprivileged Nginx container on port 8080.
+- **Backend API Service:** Cloud Run (`optima-coffee-backend`), running FastAPI / Uvicorn with auto-scaling (0..$N$ instances) and managed HTTPS.
+- **Persistence Tier:** Google Cloud SQL for PostgreSQL 16 (connected via secure Unix socket) or serverless managed PostgreSQL (Neon / Supabase via SSL).
+- **Continuous Build & Registry:** Google Cloud Build + Artifact Registry (`optima-repo`).
+
+#### Automated Deployment (Google Cloud Shell)
+
+The automated script [`deploy/deploy-cloud-run.sh`](deploy/deploy-cloud-run.sh) configures IAM bindings, builds containers in Cloud Build, and deploys both tiers to Cloud Run with CORS lockdown:
+
+```bash
+# Set environment variables in Cloud Shell
+export PROJECT_ID="your-gcp-project-id"
+export REGION="europe-central2"
+export DATABASE_URL="postgresql://user:password@host/coffeeshop?sslmode=require"
+
+# Run automated deployment
+./deploy/deploy-cloud-run.sh
+```
+
+For complete step-by-step documentation, IAM role details, and manual commands, see the [Google Cloud Run Deployment Guide](docs/cloud-run-deployment.md).
+
 ---
 
 ## Documentation Links

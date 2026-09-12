@@ -4,6 +4,7 @@ from decimal import Decimal
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.core.config import settings
 from app.core.security import hash_password
 from app.models.category import Category
 from app.models.menu_item import MenuItem
@@ -144,18 +145,21 @@ def seed_initial_data(db: Session) -> None:
     ]
     db.add_all(menu_items)
 
-    # 3. Seed Admin User if not present
-    admin_email = "admin@optima.ua"
-    existing_admin = db.execute(select(User).where(User.email == admin_email)).scalar_one_or_none()
-    if not existing_admin:
-        admin_user = User(
-            email=admin_email,
-            hashed_password=hash_password("OptimaAdmin2026!"),
-            full_name="Адміністратор Optima",
-            is_active=True,
-            is_superuser=True,
-        )
-        db.add(admin_user)
+    # 3. Seed Admin User only if explicit credentials provided via environment
+    if settings.FIRST_SUPERUSER_EMAIL and settings.FIRST_SUPERUSER_PASSWORD:
+        existing_admin = db.execute(
+            select(User).where(User.email == settings.FIRST_SUPERUSER_EMAIL)
+        ).scalar_one_or_none()
+        if not existing_admin:
+            admin_user = User(
+                email=settings.FIRST_SUPERUSER_EMAIL,
+                hashed_password=hash_password(settings.FIRST_SUPERUSER_PASSWORD),
+                full_name="Адміністратор Optima",
+                is_active=True,
+                is_superuser=True,
+            )
+            db.add(admin_user)
+            logger.info("Admin user created from environment configuration.")
 
     db.commit()
-    logger.info("Successfully seeded catalog items and default admin account.")
+    logger.info("Successfully seeded catalog items.")

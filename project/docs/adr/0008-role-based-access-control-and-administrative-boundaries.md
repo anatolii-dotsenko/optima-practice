@@ -47,4 +47,4 @@ We enforce **Role-Based Access Control (RBAC)** at the HTTP and dependency injec
 ## Verification
 
 - Automated integration tests in `test_menu_api.py` and `test_orders_api.py` confirming 403 Forbidden for regular users and 200/201 Success for admin users.
-- Live verification logging in with `admin@optima.ua` / `OptimaAdmin2026!` vs regular customer accounts.
+- Live verification logging in with configured administrator credentials (`FIRST_SUPERUSER_EMAIL` / `FIRST_SUPERUSER_PASSWORD`) vs regular customer accounts.
