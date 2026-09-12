@@ -1,0 +1,37 @@
+@startuml
+!theme plain
+skinparam componentStyle uml2
+skinparam monochrome false
+skinparam roundcorner 8
+skinparam shadowing false
+
+actor "Гість (Клієнт)" as Customer
+actor "Бариста / Адмін" as Barista
+
+package "Рівень представлення (Client Tier)" {
+  component [Вебклієнт Vanilla JS\n(SPA, Component-Based UI)] as WebClient
+}
+
+package "Рівень сервісу (Backend API Tier - FastAPI)" {
+  portin "HTTP REST Gateway" as Gateway
+  component [API Layer (FastAPI Routers)] as ApiLayer
+  component [Auth & RBAC Middleware] as SecurityLayer
+  component [Service Layer (Business Logic)] as ServiceLayer
+  component [Repository Layer (SQLAlchemy ORM)] as RepoLayer
+}
+
+package "Рівень збереження даних (Database Tier)" {
+  database "PostgreSQL 16\n(Named Volume)" as Database
+}
+
+Customer --> WebClient : Оформлення замовлення\nПерегляд меню
+Barista --> WebClient : Керування чергою\nСтоп-лист
+
+WebClient --> Gateway : HTTPS / JSON API
+Gateway --> SecurityLayer : Валідація токенів JWT
+SecurityLayer --> ApiLayer : Передача перевіреного контексту
+ApiLayer --> ServiceLayer : Виклик методів бізнес-логіки
+ServiceLayer --> RepoLayer : Запити доступу до даних
+RepoLayer --> Database : SQL-запити (ACID)
+
+@enduml

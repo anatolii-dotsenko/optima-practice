@@ -119,6 +119,12 @@ podman ps
 
 ## Documentation Links
 
+- **Practice Report (ДСТУ 3008:2015):** [report.docx](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/report.docx)
+- **Technical Specification (ТЗ):** [docs/technical-specification.md](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/docs/technical-specification.md)
+- **Architecture Overview & Diagram:** [docs/architecture.md](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/docs/architecture.md) ([PlantUML](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/docs/architecture.puml))
+- **End-User & Barista Manual:** [docs/user-manual.md](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/docs/user-manual.md)
+- **Test Report (50/50 passed):** [docs/test-report.md](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/docs/test-report.md)
+- **Defect Log:** [docs/defect-log.md](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/docs/defect-log.md)
 - **Architecture Decision Records:** [docs/adr/](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/docs/adr/)
   - [ADR-0001: Three-Tier Architecture](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/docs/adr/0001-three-tier-architecture.md)
   - [ADR-0002: Selection of FastAPI](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/docs/adr/0002-fastapi-backend-framework.md)
@@ -141,4 +147,5 @@ podman ps
   - [GET /api/v1/orders](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/docs/api/endpoints/get-orders.md)
   - [GET /api/v1/orders/admin](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/docs/api/endpoints/get-admin-orders.md)
   - [PATCH /api/v1/orders/{id}/status](file:///Users/liu/Developer/Agents_workspace/Optima/optima-practice-ai-agent/project/docs/api/endpoints/update-order-status.md)
+
 
