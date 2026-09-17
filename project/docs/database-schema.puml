@@ -1,122 +1,85 @@
 @startuml database_schema
 !theme plain
-title Рисунок 2 — Схема зв'язків реляційної бази даних PostgreSQL
 
-skinparam linetype ortho
 skinparam roundcorner 8
 skinparam shadowing false
 skinparam defaultFontName "Helvetica, Arial, sans-serif"
 skinparam defaultFontSize 12
 
-skinparam class {
+skinparam class { 
     BackgroundColor #FFFFFF
     ArrowColor #2C3E50
     BorderColor #2C3E50
-    HeaderBackgroundColor #EAEDED
+    HeaderBackgroundColor #EAEDED 
 }
 
-' ==========================================
-' Таблиця облікових записів та ролей користувачів
-' ==========================================
 entity "users" as users {
-    * **id** : INTEGER <<PK, autoincrement>>
+    * id : INTEGER <<PK, auto>>
     --
-    * email : VARCHAR(255) <<UNIQUE, index>>
+    * email : VARCHAR(255) <<UQ, idx>>
     * hashed_password : VARCHAR(255)
     * full_name : VARCHAR(255)
-    * is_active : BOOLEAN [DEFAULT TRUE]
-    * is_superuser : BOOLEAN [DEFAULT FALSE]
-    * created_at : TIMESTAMP WITH TIME ZONE
-    * updated_at : TIMESTAMP WITH TIME ZONE
+    * is_active : BOOLEAN [DEF TRUE]
+    * is_superuser : BOOLEAN [DEF FALSE]
+    * created_at : TIMESTAMPTZ
+    * updated_at : TIMESTAMPTZ
 }
 
-' ==========================================
-' Таблиця категорій меню
-' ==========================================
 entity "categories" as categories {
-    * **id** : INTEGER <<PK, autoincrement>>
+    * id : INTEGER <<PK, auto>>
     --
-    * name : VARCHAR(100) <<UNIQUE, index>>
-    * slug : VARCHAR(100) <<UNIQUE, index>>
-    description : TEXT <<nullable>>
-    * display_order : INTEGER [DEFAULT 0]
-    * is_active : BOOLEAN [DEFAULT TRUE]
-    * created_at : TIMESTAMP WITH TIME ZONE
-    * updated_at : TIMESTAMP WITH TIME ZONE
+    * name : VARCHAR(100) <<UQ, idx>>
+    * slug : VARCHAR(100) <<UQ, idx>>
+    description : TEXT <<null>>
+    * display_order : INTEGER [DEF 0]
+    * is_active : BOOLEAN [DEF TRUE]
+    * created_at : TIMESTAMPTZ
+    * updated_at : TIMESTAMPTZ
 }
 
-' ==========================================
-' Таблиця позицій меню (напої, десерти, їжа)
-' ==========================================
 entity "menu_items" as menu_items {
-    * **id** : INTEGER <<PK, autoincrement>>
+    * id : INTEGER <<PK, auto>>
     --
-    * category_id : INTEGER <<FK, index>>
-    * name : VARCHAR(150) <<index>>
-    description : TEXT <<nullable>>
+    * category_id : INTEGER <<FK, idx>>
+    * name : VARCHAR(150) <<idx>>
+    description : TEXT <<null>>
     * price : NUMERIC(10, 2)
-    image_url : VARCHAR(500) <<nullable>>
-    * is_available : BOOLEAN [DEFAULT TRUE, index]
-    * created_at : TIMESTAMP WITH TIME ZONE
-    * updated_at : TIMESTAMP WITH TIME ZONE
+    image_url : VARCHAR(500) <<null>>
+    * is_available : BOOLEAN [DEF TRUE, idx]
+    * created_at : TIMESTAMPTZ
+    * updated_at : TIMESTAMPTZ
 }
 
-' ==========================================
-' Таблиця замовлень клієнтів (сесії покупок)
-' ==========================================
 entity "orders" as orders {
-    * **id** : INTEGER <<PK, autoincrement>>
+    * id : INTEGER <<PK, auto>>
     --
-    * user_id : INTEGER <<FK, index>>
-    * status : VARCHAR(20) [order_status_enum, index]
+    * user_id : INTEGER <<FK, idx>>
+    * status : VARCHAR(20) [enum, idx]
     * total_amount : NUMERIC(10, 2)
-    notes : TEXT <<nullable>>
-    * created_at : TIMESTAMP WITH TIME ZONE
-    * updated_at : TIMESTAMP WITH TIME ZONE
+    notes : TEXT <<null>>
+    * created_at : TIMESTAMPTZ
+    * updated_at : TIMESTAMPTZ
 }
 
-' ==========================================
-' Таблиця елементів складу замовлення
-' ==========================================
 entity "order_items" as order_items {
-    * **id** : INTEGER <<PK, autoincrement>>
+    * id : INTEGER <<PK, auto>>
     --
-    * order_id : INTEGER <<FK, index>>
-    * menu_item_id : INTEGER <<FK, index>>
-    * quantity : INTEGER [DEFAULT 1]
+    * order_id : INTEGER <<FK, idx>>
+    * menu_item_id : INTEGER <<FK, idx>>
+    * quantity : INTEGER [DEF 1]
     * unit_price : NUMERIC(10, 2)
     * item_name : VARCHAR(150)
-    * created_at : TIMESTAMP WITH TIME ZONE
-    * updated_at : TIMESTAMP WITH TIME ZONE
+    * created_at : TIMESTAMPTZ
+    * updated_at : TIMESTAMPTZ
 }
 
-' ==========================================
-' Реляційні зв'язки та обмеження цілісності
-' ==========================================
-categories ||--o{ menu_items : "1 : N\n(ON DELETE CASCADE)"
-users ||--o{ orders : "1 : N\n(ON DELETE CASCADE)"
-orders ||--|{ order_items : "1 : N\n(ON DELETE CASCADE)"
-menu_items ||--o{ order_items : "1 : N\n(ON DELETE RESTRICT)"
+categories ||--o{ menu_items : "1:N (CASCADE)"
+users ||--o{ orders : "1:N (CASCADE)"
+orders ||--|{ order_items : "1:N (CASCADE)"
+menu_items ||--o{ order_items : "1:N (RESTRICT)"
 
-note right of users
-  <b>Рольова модель RBAC:</b>
-  Поле is_superuser=TRUE
-  надає права доступу до АРМ
-  бариста та черги замовлень.
-end note
-
-note right of menu_items
-  <b>Оперативний стоп-лист:</b>
-  Поле is_available=FALSE блокує
-  створення нових замовлень
-  через OrderService.
-end note
-
-note bottom of order_items
-  <b>Фіксація ціни (Snapshot):</b>
-  Поля unit_price та item_name
-  зберігають ціну на момент замовлення,
-  що захищає історію від майбутніх змін у меню.
-end note
+note bottom of users : <b>RBAC:</b> is_superuser=TRUE\nнадає доступ до АРМ бариста.
+note bottom of menu_items : <b>Стоп-лист:</b> is_available=FALSE\nблокує нові замовлення.
+note bottom of order_items : <b>Snapshot:</b> unit_price/item_name\nфіксують ціну на момент покупки.
 
 @enduml
