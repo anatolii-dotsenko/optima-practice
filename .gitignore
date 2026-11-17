@@ -467,6 +467,11 @@ dist/
 dist-ssr/
 *.local
 
+# SQLite databases
+*.db
+*.sqlite
+*.sqlite3
+
 # Terraform & Cloud Infrastructure
 .terraform/
 *.tfstate

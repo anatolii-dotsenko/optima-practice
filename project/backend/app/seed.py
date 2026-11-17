@@ -8,6 +8,7 @@ from app.core.config import settings
 from app.core.security import hash_password
 from app.models.category import Category
 from app.models.menu_item import MenuItem
+from app.models.order import Order, OrderItem, OrderStatus
 from app.models.user import User
 
 logger = logging.getLogger("coffee_shop.seed")
@@ -145,21 +146,71 @@ def seed_initial_data(db: Session) -> None:
     ]
     db.add_all(menu_items)
 
-    # 3. Seed Admin User only if explicit credentials provided via environment
-    if settings.FIRST_SUPERUSER_EMAIL and settings.FIRST_SUPERUSER_PASSWORD:
-        existing_admin = db.execute(
-            select(User).where(User.email == settings.FIRST_SUPERUSER_EMAIL)
-        ).scalar_one_or_none()
-        if not existing_admin:
-            admin_user = User(
-                email=settings.FIRST_SUPERUSER_EMAIL,
-                hashed_password=hash_password(settings.FIRST_SUPERUSER_PASSWORD),
-                full_name="Адміністратор Optima",
-                is_active=True,
-                is_superuser=True,
-            )
-            db.add(admin_user)
-            logger.info("Admin user created from environment configuration.")
+    # 3. Seed Barista (Admin) User
+    barista_email = settings.FIRST_SUPERUSER_EMAIL or "barista@optima.coffee"
+    barista_password = settings.FIRST_SUPERUSER_PASSWORD or "barista123"
+
+    existing_barista = db.execute(
+        select(User).where(User.email == barista_email)
+    ).scalar_one_or_none()
+    if not existing_barista:
+        barista_user = User(
+            email=barista_email,
+            hashed_password=hash_password(barista_password),
+            full_name="Бариста Optima Coffee",
+            is_active=True,
+            is_superuser=True,
+        )
+        db.add(barista_user)
+        logger.info("Demo barista user created: %s", barista_email)
+
+    # 4. Seed Demo Customer with pre-populated order
+    customer_email = "customer@optima.coffee"
+    existing_customer = db.execute(
+        select(User).where(User.email == customer_email)
+    ).scalar_one_or_none()
+    if not existing_customer:
+        customer_user = User(
+            email=customer_email,
+            hashed_password=hash_password("customer123"),
+            full_name="Олексій (Постійний гість)",
+            is_active=True,
+            is_superuser=False,
+        )
+        db.add(customer_user)
+        db.flush()
+
+        # Seed sample active order for barista queue demonstration
+        cappuccino = next((item for item in menu_items if item.name == "Капучино"), menu_items[0])
+        croissant = next((item for item in menu_items if "Круасан" in item.name), menu_items[1])
+        demo_order = Order(
+            user_id=customer_user.id,
+            status=OrderStatus.CONFIRMED,
+            total_amount=cappuccino.price + croissant.price,
+            notes="З вівсяним молоком, будь ласка. Дякую!",
+        )
+        db.add(demo_order)
+        db.flush()
+
+        db.add_all(
+            [
+                OrderItem(
+                    order_id=demo_order.id,
+                    menu_item_id=cappuccino.id,
+                    quantity=1,
+                    unit_price=cappuccino.price,
+                    item_name=cappuccino.name,
+                ),
+                OrderItem(
+                    order_id=demo_order.id,
+                    menu_item_id=croissant.id,
+                    quantity=1,
+                    unit_price=croissant.price,
+                    item_name=croissant.name,
+                ),
+            ]
+        )
+        logger.info("Demo customer and sample order created for barista queue.")
 
     db.commit()
     logger.info("Successfully seeded catalog items.")

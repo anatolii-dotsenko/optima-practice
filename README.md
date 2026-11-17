@@ -181,6 +181,17 @@ curl http://localhost:8000/health
 - **Інтерактивна документація API (Swagger):** `http://localhost:8000/api/v1/docs`
 - **Healthcheck:** `http://localhost:8000/health`
 
+#### 🔑 Демо-облікові записи (попередньо налаштовані в системі):
+- **Кабінет Бариста / Адміністратор:**
+  - Email: `barista@optima.coffee`
+  - Пароль: `barista123`
+  - *Доступні функції:* керування стоп-листом, зміна цін, live-черга замовлень бариста та зміна статусів (`confirmed` $\rightarrow$ `ready` $\rightarrow$ `completed`).
+- **Гість (Клієнт):**
+  - Email: `customer@optima.coffee`
+  - Пароль: `customer123`
+  - *Доступні функції:* вибір страв, оформлення замовлення, перегляд історії та статусу в профілі.
+*(На сторінці входу `#/login` також доступні кнопки швидкого автозаповнення в 1 клік).*
+
 Зупинка та видалення контейнера:
 ```bash
 docker stop optima-practice && docker rm optima-practice

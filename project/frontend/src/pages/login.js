@@ -44,7 +44,25 @@ export function renderLoginPage() {
           </button>
         </form>
 
-        <div style="text-align: center; margin-top: var(--space-6); font-size: var(--font-size-sm);">
+        <div style="margin-top: var(--space-5); padding: var(--space-4); background: rgba(184, 115, 51, 0.08); border: 1px dashed var(--color-brand-accent); border-radius: var(--radius-md);">
+          <div style="font-weight: 600; font-size: var(--font-size-sm); margin-bottom: var(--space-2); color: var(--color-brand-primary);">
+            ⚡ Швидкий демо-доступ:
+          </div>
+          <div style="display: flex; gap: var(--space-2); margin-bottom: var(--space-2);">
+            <button type="button" id="btn-fill-barista" class="btn btn-secondary" style="flex: 1; font-size: var(--font-size-xs); padding: 0.4rem;">
+              ☕ Бариста
+            </button>
+            <button type="button" id="btn-fill-customer" class="btn btn-secondary" style="flex: 1; font-size: var(--font-size-xs); padding: 0.4rem;">
+              👤 Клієнт
+            </button>
+          </div>
+          <div style="font-size: var(--font-size-xs); color: var(--color-text-secondary); line-height: 1.4;">
+            Бариста: <code>barista@optima.coffee</code> (пароль: <code>barista123</code>)<br/>
+            Клієнт: <code>customer@optima.coffee</code> (пароль: <code>customer123</code>)
+          </div>
+        </div>
+
+        <div style="text-align: center; margin-top: var(--space-5); font-size: var(--font-size-sm);">
           Ще не зареєстровані? <a href="#/register" style="color: var(--color-brand-accent); font-weight: 600; text-decoration: none;">Створити акаунт</a>
         </div>
       </div>
@@ -56,6 +74,25 @@ export function initLoginEvents(navigate) {
   const form = document.getElementById("login-form");
   const alertContainer = document.getElementById("login-alert-container");
   const submitBtn = document.getElementById("login-submit-btn");
+
+  // Autofill helpers for demo users
+  document.getElementById("btn-fill-barista")?.addEventListener("click", () => {
+    const emailInput = document.getElementById("login-email");
+    const passwordInput = document.getElementById("login-password");
+    if (emailInput && passwordInput) {
+      emailInput.value = "barista@optima.coffee";
+      passwordInput.value = "barista123";
+    }
+  });
+
+  document.getElementById("btn-fill-customer")?.addEventListener("click", () => {
+    const emailInput = document.getElementById("login-email");
+    const passwordInput = document.getElementById("login-password");
+    if (emailInput && passwordInput) {
+      emailInput.value = "customer@optima.coffee";
+      passwordInput.value = "customer123";
+    }
+  });
 
   if (!form) return;
 
@@ -90,7 +127,11 @@ export function initLoginEvents(navigate) {
       `;
 
       setTimeout(() => {
-        navigate("profile");
+        if (api.isAdmin()) {
+          navigate("admin");
+        } else {
+          navigate("profile");
+        }
       }, 800);
     } catch (err) {
       // Set Error State
