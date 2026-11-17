@@ -17,6 +17,9 @@ export function renderNavbar(activeRoute = "menu") {
         <a href="#/cart" class="nav-link ${activeRoute === "cart" ? "active" : ""}">
           🛒 Кошик <span class="cart-badge" id="nav-cart-badge">${cartCount}</span>
         </a>
+        <a href="https://github.com/anatolii-dotsenko/optima-practice" target="_blank" rel="noopener noreferrer" class="nav-link" title="GitHub Repository">
+          📦 Репозиторій
+        </a>
         ${
           isAuth
             ? `

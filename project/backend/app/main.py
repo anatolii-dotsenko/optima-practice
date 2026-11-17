@@ -1,12 +1,14 @@
 """FastAPI application entry point."""
 
 from contextlib import asynccontextmanager
+from pathlib import Path
 from typing import AsyncGenerator
 
 from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 
 from app.api.v1.api import api_router
 from app.core.config import settings
@@ -138,3 +140,12 @@ app.include_router(api_router, prefix=settings.API_V1_STR)
 def health_check() -> dict:
     """Liveness probe returning application operational status."""
     return {"status": "ok", "service": settings.PROJECT_NAME, "version": "1.0.0"}
+
+
+# Mount static frontend assets if directory exists
+_frontend_path = Path(__file__).resolve().parents[3] / "frontend"
+if not _frontend_path.exists():
+    _frontend_path = Path("/app/frontend")
+
+if _frontend_path.exists() and (_frontend_path / "index.html").exists():
+    app.mount("/", StaticFiles(directory=str(_frontend_path), html=True), name="frontend")

@@ -22,8 +22,8 @@ class Settings(BaseSettings):
     FIRST_SUPERUSER_EMAIL: str = ""
     FIRST_SUPERUSER_PASSWORD: str = ""
 
-    # Database
-    DATABASE_URL: str = "postgresql://postgres:postgres@localhost:5432/coffeeshop"
+    # Database (Defaults to zero-config SQLite; override via env for PostgreSQL)
+    DATABASE_URL: str = "sqlite:///./coffeeshop.db"
 
     # CORS
     BACKEND_CORS_ORIGINS: Union[List[str], str] = [

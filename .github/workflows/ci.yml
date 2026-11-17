@@ -1,12 +1,19 @@
-name: CI Pipeline
+name: CI/CD Pipeline
 
 on:
   push:
-    branches: ["main", "feature/*"]
+    branches: ["main", "rc", "feature/*"]
   pull_request:
-    branches: ["main"]
+    branches: ["main", "rc"]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
+  # ============================================================================
+  # Stage 1: Quality Gates (Lint, Format, Test, Spec verification)
+  # ============================================================================
   backend-checks:
     name: Backend Lint, Format & Tests
     runs-on: ubuntu-latest
@@ -46,3 +53,164 @@ jobs:
           test -f project/docs/api/endpoints/login.md
           test -f project/docs/api/endpoints/me.md
           echo "API documentation verification passed."
+
+  # ============================================================================
+  # Stage 2: Docker Build & Push to Docker Hub
+  # ============================================================================
+  build-and-push:
+    name: Build & Push Docker Image
+    needs: backend-checks
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/rc')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/optima-practice:latest
+            ${{ secrets.DOCKER_USERNAME }}/optima-practice:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ============================================================================
+  # Stage 3: Provision / Update Infrastructure with Terraform on AWS
+  # ============================================================================
+  terraform-apply:
+    name: Provision AWS Infrastructure (Terraform)
+    needs: backend-checks
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/rc')
+    runs-on: ubuntu-latest
+    outputs:
+      ec2_public_ip: ${{ steps.get-ip.outputs.ec2_public_ip }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-north-1
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.7.0"
+
+      - name: Terraform Format Check
+        run: terraform fmt -check infra/
+
+      - name: Terraform Init
+        run: terraform -chdir=infra init
+
+      - name: Terraform Apply
+        run: terraform -chdir=infra apply -auto-approve -input=false
+
+      - name: Extract Public IP
+        id: get-ip
+        run: |
+          PUBLIC_IP=$(terraform -chdir=infra output -raw ec2_public_ip)
+          echo "ec2_public_ip=$PUBLIC_IP" >> "$GITHUB_OUTPUT"
+          echo "Provisioned EC2 Public IP: $PUBLIC_IP"
+
+  # ============================================================================
+  # Stage 4: Deploy Application Container to AWS EC2 over SSH
+  # ============================================================================
+  deploy:
+    name: Deploy Container to AWS EC2
+    needs: [build-and-push, terraform-apply]
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/rc')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Configure SSH Private Key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY_B64 }}" | base64 -d > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+
+      - name: Wait for EC2 Instance & Docker Readiness
+        run: |
+          EC2_IP="${{ needs.terraform-apply.outputs.ec2_public_ip }}"
+          echo "Connecting to $EC2_IP via SSH..."
+
+          # Wait for SSH port 22
+          for i in $(seq 1 30); do
+            if ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 -i ~/.ssh/id_rsa ubuntu@"$EC2_IP" "echo SSH_READY" 2>/dev/null; then
+              echo "SSH connected successfully on attempt $i."
+              break
+            fi
+            echo "Attempt $i: waiting for SSH service..."
+            sleep 10
+          done
+
+          # Wait for user_data cloud-init script completion (Docker installation)
+          echo "Waiting for cloud-init and Docker setup to complete..."
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ubuntu@"$EC2_IP" "while [ ! -f /var/log/user-data-done ]; do sleep 5; done; echo DOCKER_INSTALLED"
+
+      - name: Pull and Run Docker Container on EC2
+        run: |
+          EC2_IP="${{ needs.terraform-apply.outputs.ec2_public_ip }}"
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ubuntu@"$EC2_IP" bash -s <<EOF
+            set -e
+
+            echo "Logging in to Docker Hub..."
+            echo "${{ secrets.DOCKER_TOKEN }}" | sudo docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+            echo "Pulling latest image..."
+            sudo docker pull "${{ secrets.DOCKER_USERNAME }}/optima-practice:latest"
+
+            echo "Stopping and removing existing container if running..."
+            sudo docker stop optima-practice 2>/dev/null || true
+            sudo docker rm optima-practice 2>/dev/null || true
+
+            echo "Starting new container on port 8000..."
+            sudo docker run -d \
+              --name optima-practice \
+              --restart unless-stopped \
+              -p 8000:8000 \
+              -e ENVIRONMENT=production \
+              -e DATABASE_URL="sqlite:////home/appuser/coffeeshop.db" \
+              "${{ secrets.DOCKER_USERNAME }}/optima-practice:latest"
+
+            echo "Container started."
+          EOF
+
+      - name: Verify Live Service Healthcheck
+        run: |
+          EC2_IP="${{ needs.terraform-apply.outputs.ec2_public_ip }}"
+          echo "Testing http://$EC2_IP:8000/health..."
+
+          for i in $(seq 1 12); do
+            if curl -sf "http://$EC2_IP:8000/health"; then
+              echo ""
+              echo "Deployment verified! Service is healthy on http://$EC2_IP:8000"
+              exit 0
+            fi
+            echo "Attempt $i: service not yet responding, waiting 5 seconds..."
+            sleep 5
+          done
+
+          echo "Deployment healthcheck timed out after 60s."
+          exit 1

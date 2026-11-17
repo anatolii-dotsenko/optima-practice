@@ -162,7 +162,33 @@ python3 -m http.server 3000
 
 ---
 
-### Варіант Б. Локальний запуск у контейнерах (Podman / Docker)
+### Варіант Б. Автономний локальний запуск у Docker (Офіційний образ)
+
+Застосунок працює повністю автономно без зовнішніх залежностей завдяки вбудованій SQLite БД та автоматичному сідінгу каталогу при старті:
+
+```bash
+# 1. Збірка Docker-образу з кореня репозиторію:
+docker build -t optima-practice .
+
+# 2. Запуск контейнера:
+docker run -d -p 8000:8000 --name optima-practice optima-practice
+
+# 3. Перевірка працездатності сервісу:
+curl http://localhost:8000/health
+```
+
+- **Вебзастосунок (Frontend UI):** `http://localhost:8000/`
+- **Інтерактивна документація API (Swagger):** `http://localhost:8000/api/v1/docs`
+- **Healthcheck:** `http://localhost:8000/health`
+
+Зупинка та видалення контейнера:
+```bash
+docker stop optima-practice && docker rm optima-practice
+```
+
+---
+
+### Варіант В. Мультиконтейнерний запуск (Podman / Docker Compose з PostgreSQL)
 
 ```bash
 cd project
@@ -179,7 +205,7 @@ podman ps
 
 ---
 
-### Варіант В. Хмарне розгортання в Google Cloud Run
+### Варіант Г. Хмарне розгортання в Google Cloud Run
 
 У [Google Cloud Shell](https://shell.cloud.google.com) достатньо виконати скрипт автоматизації:
 
@@ -213,6 +239,58 @@ export DATABASE_URL="postgresql://user:password@host/coffeeshop?sslmode=require"
   - `tests/integration/test_menu_api.py` — перевірка публічних маршрутів та блокування доступу без прав адміна (403 Forbidden).
   - `tests/integration/test_orders_api.py` — повний наскрізний цикл створення та оновлення замовлень.
 - **Статичний аналіз коду:** Ruff (PEP 8, безпека, виявлення невикористаного коду).
+
+---
+
+## ☁️ Інфраструктура AWS (Terraform) та CI/CD Pipeline
+
+У проєкті реалізовано автоматизований DevOps-конвеєр на базі **GitHub Actions**, **Docker Hub**, **Terraform (IaC)** та **AWS EC2**.
+
+### 1. Параметри хмарної інфраструктури (AWS)
+- **Регіон:** `eu-north-1` (Стокгольм)
+- **AMI ID:** `ami-0705384c0b33c194c` (Ubuntu Server LTS)
+- **Тип інстансу:** `t3.micro`
+- **SSH Key Pair:** `devops-key`
+- **Security Group:** порти `22` (SSH), `8000` (Application), `80` (HTTP), вихідний трафік відкритий.
+- **Ініціалізація (User Data):** автоматичне встановлення та запуск Docker Engine на віртуальній машині.
+
+Конфігураційні файли розташовані у теці [`infra/`](infra/):
+- `providers.tf` — налаштування AWS провайдера.
+- `variables.tf` — змінні інфраструктури.
+- `main.tf` — Security Group та EC2 інстанс з `user_data`.
+- `outputs.tf` — експорт публічної IP-адреси та URL додатку.
+- `terraform.tfvars.example` — приклад значень змінних.
+
+Локальна перевірка та ініціалізація Terraform:
+```bash
+cd infra
+terraform init
+terraform fmt -check
+terraform plan
+```
+
+### 2. Необхідні GitHub Secrets
+
+Для роботи автоматичного CI/CD пайплайну у налаштуваннях репозиторію (**Settings → Secrets and variables → Actions**) мають бути задані наступні секрети:
+
+| Назва секрету | Призначення | Приклад / Формат |
+|---|---|---|
+| `DOCKER_USERNAME` | Ім'я користувача на Docker Hub | `your_dockerhub_user` |
+| `DOCKER_TOKEN` | Персональний Access Token Docker Hub (з правами Read/Write) | `dckr_pat_...` |
+| `AWS_ACCESS_KEY_ID` | Ключ доступу AWS IAM (з правами керування EC2/VPC) | `AKIAIOSFODNN7EXAMPLE` |
+| `AWS_SECRET_ACCESS_KEY` | Секретний ключ AWS IAM | `wJalrXUtnFEMI/K7MDENG/...` |
+| `EC2_SSH_KEY_B64` | Приватний ключ `devops-key.pem` у форматі Base64 | `cat devops-key.pem \| base64` |
+
+> [!NOTE]
+> Щоб закодувати приватний ключ у Base64:
+> - На macOS: `base64 -i devops-key.pem | pbcopy`
+> - На Linux: `base64 -w0 devops-key.pem | xclip -sel clip`
+
+### 3. Етапи конвеєра GitHub Actions (`.github/workflows/ci.yml`)
+1. **`backend-checks` (Quality Gates):** лінтинг (Ruff), перевірка форматування, виконання 50 тестів Pytest, валідація наявності OpenAPI документації.
+2. **`build-and-push`:** збірка оптимізованого multi-stage Docker образу та публікація у Docker Hub з тегами `latest` та `${{ github.sha }}`.
+3. **`terraform-apply`:** автоматичне ідемпотентне розгортання інфраструктури в AWS (`eu-north-1`) та експорт публічної IP-адреси.
+4. **`deploy`:** безпечне підключення по SSH за допомогою `EC2_SSH_KEY_B64`, очікування готовності Docker-демона, завантаження свіжого образу з Docker Hub, запуск контейнера (`--restart unless-stopped`) та верифікація працездатності через `http://<EC2_IP>:8000/health`.
 
 ---
 

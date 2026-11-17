@@ -46,6 +46,9 @@ function renderApp() {
     <main class="app-container">
       ${routes[activeRoute].render()}
     </main>
+    <footer style="text-align: center; padding: 1.5rem; color: var(--color-text-secondary, #777); font-size: 0.85rem; border-top: 1px solid var(--color-border, #eee); margin-top: 2rem;">
+      Кав'ярня «Optima Roast» &bull; <a href="https://github.com/anatolii-dotsenko/optima-practice" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: underline;">GitHub Репозиторій для перевірки</a>
+    </footer>
   `;
 
   // Attach navbar logout listener

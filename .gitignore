@@ -466,3 +466,21 @@ yarn-error.log*
 dist/
 dist-ssr/
 *.local
+
+# Terraform & Cloud Infrastructure
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+*.tfvars
+!*.tfvars.example
+
+# SSH Keys, Certificates and Secrets
+*.pem
+*.key
+id_rsa
+id_rsa.pub
+.env
+.env.*
+!.env.example
+
