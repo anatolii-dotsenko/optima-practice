@@ -135,34 +135,34 @@ optima-practice/
 
 ## 🚀 Інструкція з запуску
 
-### Варіант А. Локальний запуск для розробки
+### Варіант 1. Автоматизований хмарний деплой в AWS через CI/CD (Основний / Поточний)
 
-#### 1. Бекенд:
-```bash
-cd project/backend
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt pytest ruff
+Основний production-ready метод розгортання, керований **GitHub Actions**, **Docker Hub** та **Terraform (IaC)**:
 
-# Запуск тестів (50 тестів):
-PYTHONPATH=. pytest tests -v
+1. **Автоматичний запуск через Git:**
+   Будь-який `push` у гілку `rc` або `main` автоматично ініціює повний конвеєр:
+   - Проходження 4 рівнів перевірки якості (лінтинг, форматування, 50 тестів Pytest, валідація API).
+   - Збірка оптимізованого OCI-образу та його публікація у Docker Hub під тегами `latest` та `${{ github.sha }}`.
+   - Створення/синхронізація інфраструктури AWS (`eu-north-1`, `t3.micro`, security group) за допомогою Terraform.
+   - Деплой контейнера на EC2 через SSH та фінальна верифікація працездатності (`HTTP 200` на `/health`).
 
-# Запуск локального сервера:
-uvicorn app.main:app --reload --port 8000
-```
-- Swagger UI доступний за адресою: `http://localhost:8000/api/v1/docs`
-- Healthcheck: `http://localhost:8000/health`
+2. **Доступ до розгорнутого сервісу:**
+   - **Вебзастосунок:** `http://<EC2_PUBLIC_IP>:8000/`
+   - **Інтерактивна документація Swagger:** `http://<EC2_PUBLIC_IP>:8000/api/v1/docs`
+   - **Перевірка стану:** `http://<EC2_PUBLIC_IP>:8000/health`
+   *(Публічна IP-адреса виводиться на кроці Terraform Apply в GitHub Actions або через `terraform output -raw ec2_public_ip`).*
 
-#### 2. Фронтенд:
-```bash
-cd project/frontend
-python3 -m http.server 3000
-# Відкрийте у браузері http://localhost:3000
-```
+3. **Локальне керування інфраструктурою Terraform (опціонально):**
+   ```bash
+   cd infra
+   terraform init
+   terraform apply
+   # Після завершення адреса буде виведена у змінній app_url
+   ```
 
 ---
 
-### Варіант Б. Автономний локальний запуск у Docker (Офіційний образ)
+### Варіант 2. Автономний локальний запуск у Docker (Офіційний образ)
 
 Застосунок працює повністю автономно без зовнішніх залежностей завдяки вбудованій SQLite БД та автоматичному сідінгу каталогу при старті:
 
@@ -199,7 +199,34 @@ docker stop optima-practice && docker rm optima-practice
 
 ---
 
-### Варіант В. Мультиконтейнерний запуск (Podman / Docker Compose з PostgreSQL)
+### Варіант 3. Локальний запуск для розробки (Development)
+
+#### 1. Бекенд:
+```bash
+cd project/backend
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt pytest ruff
+
+# Запуск тестів (50 тестів):
+PYTHONPATH=. pytest tests -v
+
+# Запуск локального сервера:
+uvicorn app.main:app --reload --port 8000
+```
+- Swagger UI доступний за адресою: `http://localhost:8000/api/v1/docs`
+- Healthcheck: `http://localhost:8000/health`
+
+#### 2. Фронтенд:
+```bash
+cd project/frontend
+python3 -m http.server 3000
+# Відкрийте у браузері http://localhost:3000
+```
+
+---
+
+### Варіант 4. Мультиконтейнерний запуск (Podman / Docker Compose з PostgreSQL)
 
 ```bash
 cd project
@@ -216,7 +243,10 @@ podman ps
 
 ---
 
-### Варіант Г. Хмарне розгортання в Google Cloud Run
+### Варіант 5. Хмарне розгортання в Google Cloud Run
+
+> [!WARNING]
+> **DEPRECATED / TODO REFACTORING**: Цей варіант зафіксовано для історії проходження технологічної практики (Sprint 3). Наразі він позначений як застарілий та очікує на плановий рефакторинг під нову уніфіковану схему контейнеризації. Актуальним стандартом хмарного розгортання проєкту є **Варіант 1 (AWS EC2 через Terraform та CI/CD)**.
 
 У [Google Cloud Shell](https://shell.cloud.google.com) достатньо виконати скрипт автоматизації:
 
@@ -231,9 +261,9 @@ export DATABASE_URL="postgresql://user:password@host/coffeeshop?sslmode=require"
 ./deploy/deploy-cloud-run.sh
 ```
 
-Скрипт самостійно налаштовує IAM, збирає OCI-образи через Cloud Build, публікує в Artifact Registry, розгортає бекенд і фронтенд у Cloud Run та налаштовує безпеку CORS.
+Скрипт налаштовує IAM, збирає OCI-образи через Cloud Build, публікує в Artifact Registry, розгортає бекенд і фронтенд у Cloud Run та налаштовує безпеку CORS.
 
-Детальний покроковий гайд: [`project/docs/cloud-run-deployment.md`](project/docs/cloud-run-deployment.md).
+Детальний архівний гайд: [`project/docs/cloud-run-deployment.md`](project/docs/cloud-run-deployment.md).
 
 ---
 
@@ -257,12 +287,16 @@ export DATABASE_URL="postgresql://user:password@host/coffeeshop?sslmode=require"
 
 У проєкті реалізовано автоматизований DevOps-конвеєр на базі **GitHub Actions**, **Docker Hub**, **Terraform (IaC)** та **AWS EC2**.
 
-### 1. Параметри хмарної інфраструктури (AWS)
-- **Регіон:** `eu-north-1` (Стокгольм)
-- **AMI ID:** `ami-0705384c0b33c194c` (Ubuntu Server LTS)
-- **Тип інстансу:** `t3.micro`
+### 1. Архітектура та параметри хмарної інфраструктури (AWS)
+- **Модель розгортання:** єдиний легковагий уніфікований OCI/Docker контейнер (FastAPI бекенд + роздача SPA-клієнта на порті 8000).
+- **База даних:** дуальна стратегія збереження даних ([ADR-0010](project/docs/adr/0010-dual-database-strategy-and-zero-config-sqlite-runtime.md)):
+  - *Autonomous Zero-Config Mode (SQLite):* використовується за замовчуванням у Docker-образі для EC2 (`sqlite:////home/appuser/coffeeshop.db`). Споживає лише ~70–90 МБ RAM, що ідеально підходить для `t3.micro` (1 ГБ RAM) та унеможливлює OOM-збої. На старті контейнера автоматично накладається схема та сідяться демо-акаунти.
+  - *Enterprise Mode (PostgreSQL 16):* активується під час передачі рядка `DATABASE_URL=postgresql://...` для багатоконтейнерних та серверлес-середовищ (Podman Compose, Cloud Run + Cloud SQL, [ADR-0004](project/docs/adr/0004-postgresql-and-persistence-strategy.md)).
+- **Регіон AWS:** `eu-north-1` (Стокгольм)
+- **AMI ID:** `ami-0705384c0b33c194c` (Ubuntu Server 24.04/22.04 LTS)
+- **Тип інстансу:** `t3.micro` (1 vCPU, 1 GB RAM, Burstable)
 - **SSH Key Pair:** `devops-key`
-- **Security Group:** порти `22` (SSH), `8000` (Application), `80` (HTTP), вихідний трафік відкритий.
+- **Security Group:** порти `22` (SSH), `8000` (Application Web + REST API), `80` (HTTP), вихідний трафік відкритий.
 - **Ініціалізація (User Data):** автоматичне встановлення та запуск Docker Engine на віртуальній машині.
 
 Конфігураційні файли розташовані у теці [`infra/`](infra/):
@@ -298,10 +332,22 @@ terraform plan
 > - На Linux: `base64 -w0 devops-key.pem | xclip -sel clip`
 
 ### 3. Етапи конвеєра GitHub Actions (`.github/workflows/ci.yml`)
+
+```text
+┌───────────────────┐     ┌──────────────────────┐     ┌─────────────────────┐     ┌─────────────────────┐
+│ 1. backend-checks │ ──> │  2. build-and-push   │ ──> │ 3. terraform-apply  │ ──> │      4. deploy      │
+│  - Ruff lint/fmt  │     │  - Multi-stage OCI   │     │  - AWS eu-north-1   │     │  - SSH over Base64  │
+│  - Pytest (50/50) │     │  - Push Docker Hub   │     │  - Auto-sync state  │     │  - Docker run/pull  │
+│  - OpenAPI check  │     │  - tags: latest, sha │     │  - Export EC2 IP    │     │  - Healthcheck 200  │
+└───────────────────┘     └──────────────────────┘     └─────────────────────┘     └─────────────────────┘
+```
+
 1. **`backend-checks` (Quality Gates):** лінтинг (Ruff), перевірка форматування, виконання 50 тестів Pytest, валідація наявності OpenAPI документації.
 2. **`build-and-push`:** збірка оптимізованого multi-stage Docker образу та публікація у Docker Hub з тегами `latest` та `${{ github.sha }}`.
-3. **`terraform-apply`:** автоматичне ідемпотентне розгортання інфраструктури в AWS (`eu-north-1`) та експорт публічної IP-адреси.
+3. **`terraform-apply`:** автоматичне ідемпотентне розгортання інфраструктури в AWS (`eu-north-1`) із механізмом синхронізації/імпорту стану (`terraform import`) та експортом публічної IP-адреси.
 4. **`deploy`:** безпечне підключення по SSH за допомогою `EC2_SSH_KEY_B64`, очікування готовності Docker-демона, завантаження свіжого образу з Docker Hub, запуск контейнера (`--restart unless-stopped`) та верифікація працездатності через `http://<EC2_IP>:8000/health`.
+
+Детальний опис архітектурного рішення зафіксовано в **[ADR-0009](project/docs/adr/0009-automated-ci-cd-pipeline-with-github-actions-docker-hub-and-terraform.md)**.
 
 ---
 
@@ -323,4 +369,6 @@ terraform plan
   - [ADR-0006: Скінченний автомат життєвого циклу замовлень](project/docs/adr/0006-order-state-machine-and-lifecycle.md)
   - [ADR-0007: Серверний розрахунок цін та валідація кошика](project/docs/adr/0007-server-side-price-calculation-and-cart-validation.md)
   - [ADR-0008: Розмежування ролей та адміністративні межі (RBAC)](project/docs/adr/0008-role-based-access-control-and-administrative-boundaries.md)
+  - [ADR-0009: Автоматизований CI/CD конвеєр (GitHub Actions, Docker Hub, Terraform, AWS EC2)](project/docs/adr/0009-automated-ci-cd-pipeline-with-github-actions-docker-hub-and-terraform.md)
+  - [ADR-0010: Дуальна стратегія баз даних та автономний SQLite runtime](project/docs/adr/0010-dual-database-strategy-and-zero-config-sqlite-runtime.md)
 - **Документація REST API:** [`project/docs/api/README.md`](project/docs/api/README.md) ([OpenAPI 3.1 openapi.yaml](project/docs/api/openapi.yaml))
