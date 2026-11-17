@@ -121,6 +121,28 @@ jobs:
       - name: Terraform Init
         run: terraform -chdir=infra init
 
+      - name: Import Existing Resources (State Synchronization)
+        run: |
+          DEFAULT_VPC=$(aws ec2 describe-vpcs --filters Name=isDefault,Values=true --query "Vpcs[0].VpcId" --output text 2>/dev/null || echo "")
+          
+          if [ -n "$DEFAULT_VPC" ] && [ "$DEFAULT_VPC" != "None" ]; then
+            SG_ID=$(aws ec2 describe-security-groups --filters "Name=group-name,Values=optima-practice-sg" "Name=vpc-id,Values=$DEFAULT_VPC" --query "SecurityGroups[0].GroupId" --output text 2>/dev/null || echo "")
+          else
+            SG_ID=$(aws ec2 describe-security-groups --filters "Name=group-name,Values=optima-practice-sg" --query "SecurityGroups[0].GroupId" --output text 2>/dev/null || echo "")
+          fi
+
+          if [ -n "$SG_ID" ] && [ "$SG_ID" != "None" ]; then
+            echo "Importing existing security group: $SG_ID into Terraform state..."
+            terraform -chdir=infra import aws_security_group.app_sg "$SG_ID" || true
+          fi
+
+          INSTANCE_ID=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=optima-practice-server" "Name=instance-state-name,Values=running,pending,stopped" --query "Reservations[0].Instances[0].InstanceId" --output text 2>/dev/null || echo "")
+
+          if [ -n "$INSTANCE_ID" ] && [ "$INSTANCE_ID" != "None" ]; then
+            echo "Importing existing EC2 instance: $INSTANCE_ID into Terraform state..."
+            terraform -chdir=infra import aws_instance.app_server "$INSTANCE_ID" || true
+          fi
+
       - name: Terraform Apply
         run: terraform -chdir=infra apply -auto-approve -input=false
 
