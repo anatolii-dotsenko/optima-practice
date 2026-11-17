@@ -46,6 +46,8 @@ COPY --chown=appuser:appgroup project/backend/app /app/app
 COPY --chown=appuser:appgroup project/backend/pyproject.toml /app/pyproject.toml
 COPY --chown=appuser:appgroup project/frontend /app/frontend
 
+RUN chown -R appuser:appgroup /app /home/appuser
+
 USER appuser
 
 EXPOSE 8000

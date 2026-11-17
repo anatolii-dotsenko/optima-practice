@@ -212,5 +212,6 @@ jobs:
             sleep 5
           done
 
-          echo "Deployment healthcheck timed out after 60s."
+          echo "Deployment healthcheck timed out after 60s. Fetching diagnostic logs..."
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ubuntu@"$EC2_IP" "sudo docker ps -a; echo '=== Container Logs ==='; sudo docker logs optima-practice"
           exit 1

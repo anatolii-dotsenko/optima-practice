@@ -143,9 +143,13 @@ def health_check() -> dict:
 
 
 # Mount static frontend assets if directory exists
-_frontend_path = Path(__file__).resolve().parents[3] / "frontend"
-if not _frontend_path.exists():
-    _frontend_path = Path("/app/frontend")
+_candidate_paths = [
+    Path("/app/frontend"),
+    Path(__file__).resolve().parent.parent.parent / "frontend",
+]
+_frontend_path = next(
+    (p for p in _candidate_paths if p.is_dir() and (p / "index.html").exists()), None
+)
 
-if _frontend_path.exists() and (_frontend_path / "index.html").exists():
+if _frontend_path:
     app.mount("/", StaticFiles(directory=str(_frontend_path), html=True), name="frontend")
