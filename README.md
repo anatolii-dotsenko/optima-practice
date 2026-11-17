@@ -14,9 +14,10 @@
 ## 🔗 Швидкі посилання
 
 - 📄 **Офіційний звіт з практики (ДСТУ 3008:2015):** [Переглянути в Google Docs](https://docs.google.com/document/d/1Cs6HnUGZj_0T1uJMkrIG5QCZNgycH28b9k-fGj9Tzh8/edit?usp=sharing)
-- 🌐 **Робочий вебклієнт (Cloud Run Frontend):** [https://optima-coffee-frontend-ily7vljsqa-lm.a.run.app](https://optima-coffee-frontend-ily7vljsqa-lm.a.run.app)
-- 📖 **Інтерактивна специфікація API (Swagger UI):** [https://optima-coffee-backend-ily7vljsqa-lm.a.run.app/api/v1/docs](https://optima-coffee-backend-ily7vljsqa-lm.a.run.app/api/v1/docs)
-- 🚀 **Інструкція з хмарного розгортання:** [`project/docs/cloud-run-deployment.md`](project/docs/cloud-run-deployment.md)
+- 🌐 **Робочий вебзастосунок (AWS EC2):** [http://16.171.13.85:8000/](http://16.171.13.85:8000/)
+- 📖 **Інтерактивна специфікація API (Swagger UI):** [http://16.171.13.85:8000/api/v1/docs](http://16.171.13.85:8000/api/v1/docs)
+- 🩺 **Перевірка стану сервісу (Healthcheck):** [http://16.171.13.85:8000/health](http://16.171.13.85:8000/health)
+- 🏛 **Архівне розгортання (Google Cloud Run):** [https://optima-coffee-frontend-ily7vljsqa-lm.a.run.app](https://optima-coffee-frontend-ily7vljsqa-lm.a.run.app)
 
 ---
 
@@ -147,9 +148,9 @@ optima-practice/
    - Деплой контейнера на EC2 через SSH та фінальна верифікація працездатності (`HTTP 200` на `/health`).
 
 2. **Доступ до розгорнутого сервісу:**
-   - **Вебзастосунок:** `http://<EC2_PUBLIC_IP>:8000/`
-   - **Інтерактивна документація Swagger:** `http://<EC2_PUBLIC_IP>:8000/api/v1/docs`
-   - **Перевірка стану:** `http://<EC2_PUBLIC_IP>:8000/health`
+   - **Вебзастосунок (Frontend UI):** [http://16.171.13.85:8000/](http://16.171.13.85:8000/)
+   - **Інтерактивна документація Swagger:** [http://16.171.13.85:8000/api/v1/docs](http://16.171.13.85:8000/api/v1/docs)
+   - **Перевірка стану:** [http://16.171.13.85:8000/health](http://16.171.13.85:8000/health)
    *(Публічна IP-адреса виводиться на кроці Terraform Apply в GitHub Actions або через `terraform output -raw ec2_public_ip`).*
 
 3. **Локальне керування інфраструктурою Terraform (опціонально):**
