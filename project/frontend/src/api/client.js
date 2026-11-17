@@ -22,6 +22,9 @@ class ApiClient {
     if (stored) {
       return stored;
     }
+    if (typeof window !== "undefined" && window.location.origin && window.location.port !== "3000") {
+      return "/api/v1";
+    }
     return "http://localhost:8000/api/v1";
   }
 
